@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static cms_tags %}
+
+{% block title %}Marrakech Activities Portal - Home{% endblock %}
+
+{% block content %}
+<!-- header -->
+<header class="flex">
+    <div class="container">
+        <div class="header-title">
+            <h1>{% editable_text header_element 'title' %}</h1>
+            <p>{% editable_text header_element 'description' %}</p>
+        </div>
+    </div>
+</header>
+<!-- header -->
+
+<div class="btn-container">
+    <a href="{% url 'page_detail' 'about' %}" class="sunset-btn">
+        <span>
+                {% editable_text header_button_element 'title' %}
+        </span>
+    </a>
+</div>
+
+<!-- featured section -->
+<section id="featured" class="py-4">
+    <div class="container">
+        <div class="title-wrap">
+            <span class="sm-title">
+                {% if featured_subtitle_element %}
+                    {% editable_text featured_subtitle_element 'title' %}
+                {% else %}
+                    know about some places before your travel
+                {% endif %}
+            </span>
+            <h2 class="lg-title">
+                {% if featured_title_element %}
+                    {% editable_text featured_title_element 'title' %}
+                {% else %}
+                    featured places
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="featured-row">
+            {% if featured_elements %}
+                {% for element in featured_elements %}
+                    <div class="featured-item my-2 shadow">
+                        {% editable_image element 'img-fluid' %}
+                        <div class="featured-item-content">
+                            <span>
+                                <i class="fas fa-map-marker-alt"></i>
+                                {% editable_text element 'title' %}
+                            </span>
+                            <div>
+                                <p class="text">{% editable_text element 'description' %}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Default featured items if no database content -->
+                <div class="featured-item my-2 shadow">
+                    <img src="{% static 'images/Agafay2.jpg' %}" alt="featured place">
+                    <div class="featured-item-content">
+                        <span>
+                            <i class="fas fa-map-marker-alt"></i>
+                            Agafay Desert
+                        </span>
+                        <div>
+                            <p class="text"></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add more default featured items as needed -->
+            {% endif %}
+        </div>
+    </div>
+</section>
+<!-- end of featured section -->
+
+<!-- services section -->
+<section id="services" class="py-4">
+    <div class="container">
+        <div class="title-wrap">
+            <span class="sm-title">
+                {% if services_subtitle_element %}
+                    {% editable_text services_subtitle_element 'title' %}
+                {% else %}
+                    
+                {% endif %}
+            </span>
+            <h2 class="lg-title">
+                {% if services_title_element %}
+                    {% editable_text services_title_element 'title' %}
+                {% else %}
+                    Our services
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="services-row">
+            {% if services_elements %}
+                {% for element in services_elements %}
+                    <div class="services-item">
+                        <span class="services-icon">
+                            <i class="{{ element.json_content|default:'fas fa-hotel' }}"></i>
+                        </span>
+                        <h3>{% editable_text element 'title' %}</h3>
+                        <p class="text">{% editable_text element 'description' %}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Default services items if no database content -->
+                <div class="services-item">
+                    <span class="services-icon">
+                        <i class="fas fa-hotel"></i>
+                    </span>
+                    <h3>Luxury Stay</h3>
+                    <p class="text">Relax in stylish desert lodges and enjoy breathtaking Agafay views.</p>
+                </div>
+                <!-- Add more default services items as needed -->
+            {% endif %}
+        </div>
+    </div>
+</section>
+<!-- end of services section -->
+
+<!-- testimonials section -->
+<section id="testimonials" class="py-4">
+    <div class="container">
+        <div class="title-wrap">
+            <span class="sm-title">
+                {% if testimonials_subtitle_element %}
+                    {% editable_text testimonials_subtitle_element 'title' %}
+                {% else %}
+                    what our clients say about us
+                {% endif %}
+            </span>
+            <h2 class="lg-title">
+                {% if testimonials_title_element %}
+                    {% editable_text testimonials_title_element 'title' %}
+                {% else %}
+                    testimonials
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="test-row">
+            {% if testimonial_elements %}
+                {% for element in testimonial_elements %}
+                    <div class="test-item">
+                        <p class="text">{% editable_text element 'description' %}</p>
+                        <div class="test-item-info">
+                            {% editable_image element 'img-fluid' %}
+                            <div>
+                                <h3>{% editable_text element 'title' %}</h3>
+                                <p class="text">Trip to Marrakech</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Default testimonial items if no database content -->
+                <div class="test-item">
+                    <p class="text">An unforgettable experience! The views, the hospitality, and the adventure made our trip magical.</p>
+                    <div class="test-item-info">
+                        <img src="{% static 'images/test-1.jpg' %}" alt="testimonial">
+                        <div>
+                            <h3>Kevin Wilson</h3>
+                            <p class="text">Trip to Marrakech</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add more default testimonial items as needed -->
+            {% endif %}
+        </div>
+    </div>
+</section>
+<!-- end of testimonials section -->
+
+<!-- video section -->
+<section id="video">
+    <div class="video-wrapper flex">
+        {% if video_element %}
+            {% editable_video video_element %}
+        {% else %}
+            <video loop>
+                <source src="{% static 'videos/video-section.mp4' %}" type="video/mp4">
+            </video>
+        {% endif %}
+        <button type="button" id="play-btn">
+            <i class="fas fa-play"></i>
+        </button>
+    </div>
+</section>
+<!-- end of video section -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // play/pause video
+    let video = document.querySelector('.video-wrapper video');
+    document.getElementById('play-btn').addEventListener('click', () => {
+        if(video.paused){
+            video.play();
+        } else {
+            video.pause();
+        }
+    });
+</script>
+{% endblock %}

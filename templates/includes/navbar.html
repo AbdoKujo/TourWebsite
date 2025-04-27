@@ -1,0 +1,44 @@
+{% load cms_tags %}
+<!-- navbar  -->
+<nav class="navbar">
+    <div class="container flex">
+        <a href="{% url 'home' %}" class="site-brand">
+            {% if navbar_logo_element %}
+                {% editable_text navbar_logo_element 'title' %}
+            {% else %}
+                Marrakech<span>Activities<span>Portal</span>
+            {% endif %}
+        </a>
+        <button type="button" id="navbar-show-btn" class="flex">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div id="navbar-collapse">
+            <button type="button" id="navbar-close-btn" class="flex">
+                <i class="fas fa-times"></i>
+            </button>
+            <ul class="navbar-nav">
+                {% if navbar_elements %}
+                    {% for element in navbar_elements %}
+                        <li class="nav-item">
+                            <a href="{{ element.src }}" class="nav-link">{% editable_text element 'title' %}</a>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="nav-item">
+                        <a href="{% url 'home' %}" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'page_detail' 'gallery' %}" class="nav-link">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'page_detail' 'about' %}" class="nav-link">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'page_detail' 'contact' %}" class="nav-link">Contact</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- end of navbar  -->

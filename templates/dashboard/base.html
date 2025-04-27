@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - Marrakech Activities Portal{% endblock %}</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="dashboard-nav">
+                <div class="dashboard-logo">
+                    <a href="{% url 'dashboard' %}">Marrakech Activities Portal - Admin</a>
+                </div>
+                <div class="dashboard-user">
+                    <span>Welcome, {{ request.user.username }}</span>
+                    <a href="{% url 'admin:logout' %}" class="dashboard-btn secondary">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="dashboard-footer">
+        <div class="container">
+            <p>&copy; {% now "Y" %} Marrakech Activities Portal - Admin Dashboard</p>
+        </div>
+    </footer>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cms_tags %}
+
+{% block title %}Services - Marrakech Activities Portal{% endblock %}
+
+{% block content %}
+<!-- header -->
+<header class="flex header-sm">
+    <div class="container">
+        <div class="header-title">
+            <h1>{% editable_text header_element 'title' %}</h1>
+            <p>{% editable_text header_element 'description' %}</p>
+        </div>
+    </div>
+</header>
+<!-- header -->
+
+<!-- services section -->
+<section>
+    {% if about_elements %}
+        {% for element in about_elements %}
+            {% with link_data=element.json_content|json_parse %}
+            <div class="tour-container">
+                {% editable_image element %}
+                <div class="tour-details">
+                    <h2>{% editable_text element 'title' %}</h2>
+                    <p>{% editable_text element 'description' %}</p>
+                    <a href="{% if 'theme/' in link_data.link %}{% url 'theme_page' link_data.link|cut:'theme/' %}{% else %}{% url 'page_detail' link_data.link %}{% endif %}" class="read-more-btn">{{ link_data.link_text }}</a>
+                </div>
+            </div>
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+</section>
+<!-- end of services section -->
+
+<!-- facts section -->
+<section id="facts" class="py-4 flex">
+    <div class="container">
+        <div class="title-wrap">
+            <span class="sm-title">DISCOVER SOME FACTS ABOUT OUR SERVICES</span>
+            <h2 class="lg-title">FUN FACTS</h2>
+        </div>
+
+        <div class="facts-row">
+            {% if facts_elements %}
+                {% with facts_data=facts_elements.0.json_content|json_parse %}
+                    {% for item in facts_data.items %}
+                    <div class="facts-item">
+                        <span class="{{ item.icon }} facts-icon"></span>
+                        <div class="facts-info">
+                            <strong>{{ item.title }}</strong>
+                            <p class="text">{{ item.text }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endwith %}
+            {% else %}
+            <div class="facts-item">
+                <span class="fas fa-map-marker-alt facts-icon"></span>
+                <div class="facts-info">
+                    <strong>50+</strong>
+                    <p class="text">Destinations Covered</p>
+                </div>
+            </div>
+
+            <div class="facts-item">
+                <span class="fas fa-globe facts-icon"></span>
+                <div class="facts-info">
+                    <strong>1,000+</strong>
+                    <p class="text">Happy Travelers</p>
+                </div>
+            </div>
+
+            <div class="facts-item">
+                <span class="fas fa-car facts-icon"></span>
+                <div class="facts-info">
+                    <strong>300+</strong>
+                    <p class="text">Tours Organized</p>
+                </div>
+            </div>
+
+            <div class="facts-item">
+                <span class="fas fa-star facts-icon"></span>
+                <div class="facts-info">
+                    <strong>100%</strong>
+                    <p class="text">Customer Satisfaction</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<!-- end of facts section -->
+{% endblock %}

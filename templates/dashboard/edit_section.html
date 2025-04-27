@@ -1,0 +1,222 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Edit Section - {{ section.name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Edit Section: {{ section.name }}</h1>
+        <div class="dashboard-actions">
+            <a href="{{ section.page.get_absolute_url }}" class="dashboard-btn" target="_blank">View Page</a>
+            <a href="{% url 'edit_page' section.page.id %}" class="dashboard-btn secondary">Back to Page</a>
+        </div>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2 class="dashboard-card-title">Section Details</h2>
+        <form method="post" action="{% url 'edit_section' section.id %}">
+            {% csrf_token %}
+            <div class="dashboard-form-group">
+                <label for="section-name">Section Name</label>
+                <input type="text" id="section-name" name="name" value="{{ section.name }}" class="dashboard-form-control">
+            </div>
+            <div class="dashboard-form-group">
+                <label for="section-type">Section Type</label>
+                <select id="section-type" name="type" class="dashboard-form-control">
+                    <option value="text" {% if section.type == 'text' %}selected{% endif %}>Text</option>
+                    <option value="image" {% if section.type == 'image' %}selected{% endif %}>Image</option>
+                    <option value="video" {% if section.type == 'video' %}selected{% endif %}>Video</option>
+                    <option value="json" {% if section.type == 'json' %}selected{% endif %}>JSON</option>
+                    <option value="form" {% if section.type == 'form' %}selected{% endif %}>Form</option>
+                </select>
+            </div>
+            <div class="dashboard-form-group">
+                <label for="section-order">Order</label>
+                <input type="number" id="section-order" name="order" value="{{ section.order }}" class="dashboard-form-control">
+            </div>
+            <button type="submit" class="dashboard-btn">Update Section</button>
+        </form>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2 class="dashboard-card-title">Elements</h2>
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Source</th>
+                    <th>Order</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for element in elements %}
+                <tr>
+                    <td>{{ element.id }}</td>
+                    <td>{{ element.title|truncatechars:30 }}</td>
+                    <td>{{ element.description|truncatechars:50 }}</td>
+                    <td>{{ element.src|truncatechars:30 }}</td>
+                    <td>{{ element.order }}</td>
+                    <td>
+                        <button class="dashboard-btn edit-element-btn" data-element-id="{{ element.id }}">Edit</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No elements found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="dashboard-actions" style="margin-top: 20px;">
+            <button id="add-element-btn" class="dashboard-btn">Add Element</button>
+        </div>
+    </div>
+    
+    <!-- Add Element Modal -->
+    <div id="add-element-modal" class="edit-modal" style="display: none;">
+        <div class="edit-modal-content">
+            <h3>Add New Element</h3>
+            <form method="post" action="{% url 'edit_section' section.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_element">
+                <div class="dashboard-form-group">
+                    <label for="element-title">Title</label>
+                    <input type="text" id="element-title" name="title" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="element-description">Description</label>
+                    <textarea id="element-description" name="description" class="dashboard-form-control" rows="5"></textarea>
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="element-json">JSON Content</label>
+                    <textarea id="element-json" name="json_content" class="dashboard-form-control" rows="5"></textarea>
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="element-src">Source URL</label>
+                    <input type="text" id="element-src" name="src" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="element-file">Upload File</label>
+                    <input type="file" id="element-file" name="file" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="element-order">Order</label>
+                    <input type="number" id="element-order" name="order" value="0" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-actions">
+                    <button type="submit" class="dashboard-btn">Add Element</button>
+                    <button type="button" id="cancel-add-element" class="dashboard-btn secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Element Modal -->
+    <div id="edit-element-modal" class="edit-modal" style="display: none;">
+        <div class="edit-modal-content">
+            <h3>Edit Element</h3>
+            <form id="edit-element-form" method="post" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_element">
+                <div class="dashboard-form-group">
+                    <label for="edit-element-title">Title</label>
+                    <input type="text" id="edit-element-title" name="title" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="edit-element-description">Description</label>
+                    <textarea id="edit-element-description" name="description" class="dashboard-form-control" rows="5"></textarea>
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="edit-element-json">JSON Content</label>
+                    <textarea id="edit-element-json" name="json_content" class="dashboard-form-control" rows="5"></textarea>
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="edit-element-src">Source URL</label>
+                    <input type="text" id="edit-element-src" name="src" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="edit-element-file">Upload New File</label>
+                    <input type="file" id="edit-element-file" name="file" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="edit-element-order">Order</label>
+                    <input type="number" id="edit-element-order" name="order" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-actions">
+                    <button type="submit" class="dashboard-btn">Update Element</button>
+                    <button type="button" id="cancel-edit-element" class="dashboard-btn secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Add Element Modal
+    const addElementBtn = document.getElementById('add-element-btn');
+    const addElementModal = document.getElementById('add-element-modal');
+    const cancelAddElement = document.getElementById('cancel-add-element');
+    
+    addElementBtn.addEventListener('click', function() {
+        addElementModal.style.display = 'flex';
+    });
+    
+    cancelAddElement.addEventListener('click', function() {
+        addElementModal.style.display = 'none';
+    });
+    
+    // Edit Element Modal
+    const editElementBtns = document.querySelectorAll('.edit-element-btn');
+    const editElementModal = document.getElementById('edit-element-modal');
+    const cancelEditElement = document.getElementById('cancel-edit-element');
+    const editElementForm = document.getElementById('edit-element-form');
+    
+    editElementBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const elementId = this.dataset.elementId;
+            
+            // Fetch element data
+            fetch(`/dashboard/element/${elementId}/get/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Set form action
+                    editElementForm.action = `/dashboard/element/${elementId}/update/`;
+                    
+                    // Populate form fields
+                    document.getElementById('edit-element-title').value = data.title || '';
+                    document.getElementById('edit-element-description').value = data.description || '';
+                    document.getElementById('edit-element-json').value = data.json_content || '';
+                    document.getElementById('edit-element-src').value = data.src || '';
+                    document.getElementById('edit-element-order').value = data.order || 0;
+                    
+                    // Show modal
+                    editElementModal.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error fetching element data:', error);
+                    alert('Error fetching element data. Please try again.');
+                });
+        });
+    });
+    
+    cancelEditElement.addEventListener('click', function() {
+        editElementModal.style.display = 'none';
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === addElementModal) {
+            addElementModal.style.display = 'none';
+        }
+        if (event.target === editElementModal) {
+            editElementModal.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

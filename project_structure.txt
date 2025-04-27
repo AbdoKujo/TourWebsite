@@ -1,0 +1,44 @@
+website_cms/
+│
+├── website_cms/          # Main project folder
+│   ├── __init__.py
+│   ├── settings.py       # Project settings
+│   ├── urls.py           # Main URL configuration
+│   ├── wsgi.py
+│   └── asgi.py
+│
+├── cms/                  # CMS app
+│   ├── __init__.py
+│   ├── models.py         # Database models
+│   ├── views.py          # Views for frontend and dashboard
+│   ├── urls.py           # URL patterns for the app
+│   ├── admin.py          # Admin configuration
+│   ├── forms.py          # Forms for content editing
+│   ├── middleware.py     # Edit mode middleware
+│   └── templatetags/     # Custom template tags
+│       ├── __init__.py
+│       └── cms_tags.py   # Tags for rendering editable content
+│
+├── static/               # Static files (CSS, JS, images)
+│   ├── css/              # Your existing CSS files
+│   ├── js/               # Your existing JS files
+│   ├── images/           # Your existing images
+│   └── admin/            # Custom admin/dashboard styles and scripts
+│       ├── css/
+│       │   └── dashboard.css
+│       └── js/
+│           └── edit-mode.js
+│
+└── templates/            # Templates
+    ├── base.html         # Base template with common elements
+    ├── pages/            # Frontend page templates
+    │   ├── index.html
+    │   ├── gallery.html
+    │   ├── about.html
+    │   ├── contact.html
+    │   └── theme_page.html  # Template for theme pages
+    └── dashboard/        # Dashboard templates
+        ├── login.html
+        ├── dashboard.html
+        ├── edit_page.html
+        └── edit_section.html

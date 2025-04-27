@@ -1,0 +1,50 @@
+/* Mobile-only navbar styles */
+@media (max-width: 768px) {
+  /* Navbar collapse styling for mobile */
+  #navbar-collapse {
+    background-color: #1ec6b6 !important; /* Teal/turquoise color */
+    right: -100% !important; /* Start off-screen */
+    width: 100% !important; /* Full width for mobile */
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+    transition: right 0.3s ease !important;
+  }
+
+  #navbar-collapse.navbar-collapse-rmw {
+    right: 0 !important; /* Slide in from right */
+  }
+
+  #navbar-close-btn {
+    position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    background: transparent !important;
+    border: none !important;
+    color: white !important;
+    font-size: 1.5rem !important;
+  }
+
+  .navbar-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1.5rem !important;
+    margin-top: 2rem !important;
+    padding: 0 !important;
+  }
+
+  .nav-item {
+    margin: 0 !important;
+  }
+
+  .nav-link {
+    color: white !important;
+    font-size: 1.2rem !important;
+    text-decoration: none !important;
+  }
+}
+
+/* Keep the desktop navbar as is - no changes needed */

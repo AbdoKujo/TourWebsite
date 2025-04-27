@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Marrakech Activities Portal{% endblock %}</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="{% static 'font/fonts.css' %}">
+    
+    <!-- Normalize CSS -->
+    <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/utility.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar-mobile.css' %}">
+    
+    {% if edit_mode %}
+    <!-- Edit Mode CSS -->
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+    {% endif %}
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body {% if edit_mode %}class="edit-mode"{% endif %}>
+    {% include 'includes/navbar.html' %}
+    
+    {% block content %}{% endblock %}
+    
+    {% include 'includes/footer.html' %}
+    
+    <!-- JavaScript -->
+    <script src="{% static 'js/script.js' %}"></script>
+    
+    {% if edit_mode %}
+    <!-- Edit Mode JavaScript -->
+    <script src="{% static 'admin/js/edit-mode.js' %}"></script>
+    {% endif %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

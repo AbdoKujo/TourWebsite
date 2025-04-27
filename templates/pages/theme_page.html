@@ -1,0 +1,229 @@
+{% load static %}
+{% load cms_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{ page.name }} - Marrakech Activities Portal</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- font awesome cdn -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- fonts -->
+    <link rel="stylesheet" href="{% static 'font/fonts.css' %}">
+    <!-- normalize css -->
+    <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+    <!-- custom css -->
+    <link rel="stylesheet" href="{% static 'css/utility.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/slider.css' %}">
+    <link rel="stylesheet" href="{% static 'css/form.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'css/navbar-mobile.css' %}">
+    
+    {% if edit_mode %}
+    <!-- Edit Mode CSS -->
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+    {% endif %}
+</head>
+<body {% if edit_mode %}class="edit-mode"{% endif %}>
+    {% include 'includes/navbar.html' %}
+    
+    <!-- header with slider -->
+    <header class="flex header-sm">
+        <div class="slider-container">
+            <div class="slider-list">
+                {% if gallery_elements %}
+                    {% for element in gallery_elements %}
+                        <div class="slider-item" id="item_{{ forloop.counter0 }}">
+                            {% editable_image element %}
+                            <div class="slider-content">
+                                {% if forloop.first %}
+                                    <h2 class="header-title-text">{% editable_text header_element 'title' %}</h2>
+                                    <div class="slider-content1">
+                                        {% editable_text header_element 'description' %}
+                                    </div>
+                                {% else %}
+                                    <h2 class="header-title-text">{% editable_text header_element 'title' %}</h2>
+                                    <div class="slider-content1"></div>
+                                {% endif %}
+                                <a href="https://wa.me/212643562320?text=Hello,%20I%20want%20to%20book%20a%20trip%20to%20{{ page.name|lower }}">
+                                    <button class="slider-button" target="_blank">Book Now</button>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Default slider item if no gallery elements exist -->
+                    <div class="slider-item" id="item_0">
+                        <img src="{% static 'images/default.jpg' %}" alt="" />
+                        <div class="slider-content">
+                            <h2 class="header-title-text">{% editable_text header_element 'title' %}</h2>
+                            <div class="slider-content1">
+                                {% editable_text header_element 'description' %}
+                            </div>
+                            <a href="https://wa.me/212643562320?text=Hello,%20I%20want%20to%20book%20a%20trip%20to%20{{ page.name|lower }}">
+                                <button class="slider-button" target="_blank">Book Now</button>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <button id="slider-prev" class="slider-prev"><i class="fa-solid fa-angle-left"></i></button>
+            <button id="slider-next" class="slider-next"><i class="fa-solid fa-angle-right"></i></button>
+        </div>
+    </header>
+    <!-- end of header -->
+
+    <!-- Trip Description Section -->
+    <section class="trip-description">
+        <div class="container">
+            <div class="section-title text-center">
+                <h2>{% editable_text header_element 'title' %}</h2>
+                <p>{% editable_text header_element 'description' %}</p>
+            </div>
+            <div class="trip-details">
+                <div class="trip-info">
+                    <h2>About This Trip</h2>
+                    {% if description_elements %}
+                        <p>{% editable_text description_elements.0 'description' %}</p>
+                        <p></p>
+                        
+                        <div class="trip-highlights">
+                            <h3>Trip Highlights</h3>
+                            <ul class="highlights-list">
+                                {% with highlights=description_elements.0.json_content|json_parse %}
+                                    {% if highlights.highlights %}
+                                        {% for highlight in highlights.highlights %}
+                                            <li>{{ highlight }}</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>{{ page.name }}: Discover the charm of this destination.</li>
+                                        <li>Explore the cultural and spiritual heart of Morocco.</li>
+                                        <li>Enjoy excursions through breathtaking landscapes.</li>
+                                        <li>Experience local traditions and visit historical landmarks.</li>
+                                        <li>Cultural Immersion: Shop in lively souks and visit museums.</li>
+                                    {% endif %}
+                                {% endwith %}
+                            </ul>
+                        </div>
+                        
+                        <p>This adventure offers a perfect blend of history, nature, and culture, making it an unforgettable journey through Morocco's most iconic destinations.</p>
+                    {% endif %}
+                </div>
+                
+                <div class="booking-form">
+                    <h3>Book This Trip</h3>
+                    <form id="booking-form">
+                        {% if booking_elements %}
+                            {% with booking_data=booking_elements.0.json_content|json_parse %}
+                                {% if booking_data.form and booking_data.form.fields %}
+                                    {% for field in booking_data.form.fields %}
+                                        <div class="form-group">
+                                            <label for="{{ field.name }}">{{ field.label }}</label>
+                                            {% if field.type == 'textarea' %}
+                                                <textarea id="{{ field.name }}" class="form-control" rows="3" {% if field.required %}required{% endif %}></textarea>
+                                            {% elif field.type == 'select' %}
+                                                <select id="{{ field.name }}" class="form-control" {% if field.required %}required{% endif %}>
+                                                    <option value="">Select</option>
+                                                    {% for option in field.options %}
+                                                        <option value="{{ option }}">{{ option }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            {% else %}
+                                                <input type="{{ field.type }}" id="{{ field.name }}" class="form-control" {% if field.required %}required{% endif %}>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Default form fields if booking data doesn't have proper structure -->
+                                    <div class="form-group">
+                                        <label for="name">Full Name</label>
+                                        <input type="text" id="name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" id="email" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="phone">Phone Number</label>
+                                        <input type="tel" id="phone" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="date">Trip Date</label>
+                                        <input type="date" id="date" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="guests">Number of Guests</label>
+                                        <select id="guests" class="form-control" required>
+                                            <option value="">Select</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5+</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="message">Special Requests</label>
+                                        <textarea id="message" class="form-control" rows="3"></textarea>
+                                    </div>
+                                {% endif %}
+                                <button type="button" id="whatsapp-book" class="btn-book">Book Now</button>
+                            {% endwith %}
+                        {% else %}
+                            <!-- Default booking form when no booking elements exist -->
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Trip Date</label>
+                                <input type="date" id="date" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="guests">Number of Guests</label>
+                                <select id="guests" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5+</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Special Requests</label>
+                                <textarea id="message" class="form-control" rows="3"></textarea>
+                            </div>
+                            <button type="button" id="default-whatsapp-book" class="btn-book">Book Now</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div> 
+    </section>
+
+    {% include 'includes/footer.html' %}
+    
+    <!-- JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/slider.js' %}"></script>
+    
+    {% if edit_mode %}
+    <!-- Edit Mode JavaScript -->
+    <script src="{% static 'admin/js/edit-mode.js' %}"></script>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,49 @@
+/* New navbar styles */
+#navbar-collapse {
+  background-color: #1ec6b6 !important; /* Teal/turquoise color */
+  right: -100% !important; /* Start off-screen */
+  width: 100% !important; /* Full width for mobile */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-direction: column !important;
+}
+
+#navbar-collapse.navbar-collapse-rmw {
+  right: 0 !important; /* Slide in from right */
+}
+
+#navbar-close-btn {
+  position: absolute !important;
+  top: 20px !important;
+  right: 20px !important;
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 1.5rem !important;
+}
+
+.navbar-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1.5rem !important;
+  margin-top: 2rem !important;
+}
+
+.nav-item {
+  margin: 0 !important;
+}
+
+.nav-link {
+  color: white !important;
+  font-size: 1.2rem !important;
+  text-decoration: none !important;
+}
+
+@media (min-width: 768px) {
+  #navbar-collapse {
+    width: 350px !important; /* Narrower on desktop */
+  }
+}

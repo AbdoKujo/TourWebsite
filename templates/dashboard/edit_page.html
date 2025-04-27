@@ -1,0 +1,131 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Edit Page - {{ page.name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Edit Page: {{ page.name }}</h1>
+        <div class="dashboard-actions">
+            <a href="{{ page.get_absolute_url }}" class="dashboard-btn" target="_blank">View Page</a>
+            <a href="{% url 'dashboard' %}" class="dashboard-btn secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2 class="dashboard-card-title">Page Details</h2>
+        <form method="post" action="{% url 'edit_page' page.id %}">
+            {% csrf_token %}
+            <div class="dashboard-form-group">
+                <label for="page-name">Page Name</label>
+                <input type="text" id="page-name" name="name" value="{{ page.name }}" class="dashboard-form-control">
+            </div>
+            <div class="dashboard-form-group">
+                <label for="page-type">Page Type</label>
+                <select id="page-type" name="type" class="dashboard-form-control">
+                    <option value="base" {% if page.type == 'base' %}selected{% endif %}>Base Page</option>
+                    <option value="theme" {% if page.type == 'theme' %}selected{% endif %}>Theme Page</option>
+                </select>
+            </div>
+            <div class="dashboard-form-group">
+                <label for="page-slug">Page Slug</label>
+                <input type="text" id="page-slug" name="slug" value="{{ page.slug }}" class="dashboard-form-control">
+            </div>
+            <button type="submit" class="dashboard-btn">Update Page</button>
+        </form>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2 class="dashboard-card-title">Sections</h2>
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Elements</th>
+                    <th>Order</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for section in sections %}
+                <tr>
+                    <td>{{ section.name }}</td>
+                    <td>{{ section.get_type_display }}</td>
+                    <td>{{ section.elements.count }}</td>
+                    <td>{{ section.order }}</td>
+                    <td>
+                        <a href="{% url 'edit_section' section.id %}" class="dashboard-btn">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No sections found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="dashboard-actions" style="margin-top: 20px;">
+            <button id="add-section-btn" class="dashboard-btn">Add Section</button>
+        </div>
+    </div>
+    
+    <!-- Add Section Modal -->
+    <div id="add-section-modal" class="edit-modal" style="display: none;">
+        <div class="edit-modal-content">
+            <h3>Add New Section</h3>
+            <form method="post" action="{% url 'edit_page' page.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_section">
+                <div class="dashboard-form-group">
+                    <label for="section-name">Section Name</label>
+                    <input type="text" id="section-name" name="name" class="dashboard-form-control" required>
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="section-type">Section Type</label>
+                    <select id="section-type" name="type" class="dashboard-form-control" required>
+                        <option value="text">Text</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                        <option value="json">JSON</option>
+                        <option value="form">Form</option>
+                    </select>
+                </div>
+                <div class="dashboard-form-group">
+                    <label for="section-order">Order</label>
+                    <input type="number" id="section-order" name="order" value="0" class="dashboard-form-control">
+                </div>
+                <div class="dashboard-actions">
+                    <button type="submit" class="dashboard-btn">Add Section</button>
+                    <button type="button" id="cancel-add-section" class="dashboard-btn secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Add Section Modal
+    const addSectionBtn = document.getElementById('add-section-btn');
+    const addSectionModal = document.getElementById('add-section-modal');
+    const cancelAddSection = document.getElementById('cancel-add-section');
+    
+    addSectionBtn.addEventListener('click', function() {
+        addSectionModal.style.display = 'flex';
+    });
+    
+    cancelAddSection.addEventListener('click', function() {
+        addSectionModal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === addSectionModal) {
+            addSectionModal.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

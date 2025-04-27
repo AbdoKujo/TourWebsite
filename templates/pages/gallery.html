@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cms_tags %}
+
+{% block title %}Gallery - Marrakech Activities Portal{% endblock %}
+
+{% block content %}
+<!-- header -->
+<header class="flex header-sm">
+    <div class="container">
+        <div class="header-title">
+            <h1>{% editable_text header_element 'title' %}</h1>
+            <p>{% editable_text header_element 'description' %}</p>
+        </div>
+    </div>
+</header>
+<!-- header -->
+
+<!-- gallery section -->
+<div id="gallery" class="py-4">
+    <div class="container">
+        <div class="gallery-row">
+            {% if gallery_elements %}
+                {% for element in gallery_elements %}
+                <div class="gallery-item shadow">
+                    {% editable_image element %}
+                    <span class="zoom-icon">
+                        <i class="fas fa-search-plus"></i>
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Fallback gallery items if no elements in database -->
+                <div class="gallery-item shadow">
+                    <img src="{% static 'images/gallery-1.jpg' %}" alt="gallery img">
+                    <span class="zoom-icon">
+                        <i class="fas fa-search-plus"></i>
+                    </span>
+                </div>
+                <!-- Add more fallback items as needed -->
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- end of gallery section -->
+
+<!-- img modal -->
+<div id="img-modal-box">
+    <div id="img-modal">
+        <button type="button" id="modal-close-btn" class="flex">
+            <i class="fas fa-times"></i>
+        </button>
+        <button type="button" id="prev-btn" class="flex">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button type="button" id="next-btn" class="flex">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <img src="{% static 'images/gallery-1.jpg' %}">
+    </div>
+</div>
+<!-- end of img modal -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // image modal
+    const allGalleryItem = document.querySelectorAll('.gallery-item');
+    const imgModalDiv = document.getElementById('img-modal-box');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    let currentIndex = 0;
+    let images = [];
+
+    // Collect all image sources
+    allGalleryItem.forEach((item, index) => {
+        const img = item.querySelector('img');
+        images.push(img.src);
+    });
+
+    allGalleryItem.forEach((galleryItem, index) => {
+        galleryItem.addEventListener('click', () => {
+            imgModalDiv.style.display = "flex";
+            currentIndex = index;
+            showImageContent(currentIndex);
+        });
+    });
+
+    // next click
+    nextBtn.addEventListener('click', () => {
+        currentIndex++;
+        if(currentIndex >= images.length){
+            currentIndex = 0;  () => {
+        currentIndex++;
+        if(currentIndex >= images.length){
+            currentIndex = 0;
+        }
+        showImageContent(currentIndex);
+    });
+
+    // previous click
+    prevBtn.addEventListener('click', () => {
+        currentIndex--;
+        if(currentIndex < 0){
+            currentIndex = images.length - 1;
+        }
+        showImageContent(currentIndex);
+    });
+
+    function showImageContent(index){
+        imgModalDiv.querySelector('#img-modal img').src = images[index];
+    }
+
+    modalCloseBtn.addEventListener('click', () => {
+        imgModalDiv.style.display = "none";
+    });
+</script>
+{% endblock %}

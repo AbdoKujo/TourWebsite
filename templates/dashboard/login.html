@@ -1,0 +1,32 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Login - Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-card" style="max-width: 400px; margin: 100px auto;">
+        <h2 class="dashboard-card-title">Login to Dashboard</h2>
+        
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            Your username and password didn't match. Please try again.
+        </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'admin_login' %}">
+            {% csrf_token %}
+            <div class="dashboard-form-group">
+                <label for="id_username">Username</label>
+                <input type="text" name="username" id="id_username" class="dashboard-form-control" required>
+            </div>
+            <div class="dashboard-form-group">
+                <label for="id_password">Password</label>
+                <input type="password" name="password" id="id_password" class="dashboard-form-control" required>
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="dashboard-btn" style="width: 100%;">Login</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
