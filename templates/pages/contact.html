@@ -20,37 +20,43 @@
 <section id="contact" class="py-4">
     <div class="container">
         <div class="title-wrap">
-            <span class="sm-title">get in touch with us</span>
-            <h2 class="lg-title">contact us</h2>
+            <span class="sm-title">
+                {% if contact_elements %}
+                    {% for element in contact_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'subtitle' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    get in touch with us
+                {% endif %}
+            </span>
+            <h2 class="lg-title">
+                {% if contact_elements %}
+                    {% for element in contact_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    contact us
+                {% endif %}
+            </h2>
         </div>
         <div class="contact-row">
             <div class="contact-left">
                 {% if contact_elements %}
-                    {% with contact_data=contact_elements.0.json_content|json_parse %}
-                        <form class="contact-form" onsubmit="sendWhatsApp(); return false;">
-                            {% for field in contact_data.form.fields %}
-                                {% if field.type == 'textarea' %}
-                                    <textarea rows="4" class="form-control" id="{{ field.name }}" placeholder="{{ field.label }}" style="resize: none;" {% if field.required %}required{% endif %}></textarea>
-                                {% else %}
-                                    <input type="{{ field.type }}" class="form-control" id="{{ field.name }}" placeholder="{{ field.label }}" {% if field.required %}required{% endif %}>
-                                {% endif %}
-                            {% endfor %}
-                            <button type="submit" class="btn">{{ contact_data.form.submit_text }}</button>
-                        </form>
-                        
-                        <script>
-                        function sendWhatsApp() {
-                            let name = document.getElementById("name").value;
-                            let email = document.getElementById("email").value;
-                            let message = document.getElementById("message").value;
-                        
-                            let phoneNumber = "{{ contact_data.form.whatsapp_number }}"; // WhatsApp number
-                            let whatsappLink = `https://wa.me/${phoneNumber}?text=Name: ${encodeURIComponent(name)}%0AEmail: ${encodeURIComponent(email)}%0AMessage: ${encodeURIComponent(message)}`;
-                        
-                            window.location.href = whatsappLink;
-                        }
-                        </script>
-                    {% endwith %}
+                    {% for element in contact_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if not parsed.type %}
+                                {% editable_form element %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     <!-- Fallback form if no elements in database -->
                     <form class="contact-form" onsubmit="sendWhatsApp(); return false;">
@@ -77,25 +83,31 @@
             
             <div class="contact-right my-2">
                 {% if contact_elements %}
-                    {% with contact_data=contact_elements.0.json_content|json_parse %}
-                        {% for info in contact_data.contact_info %}
-                            <div class="contact-item">
-                                <span class="contact-icon flex">
-                                    <i class="{{ info.icon }}"></i>
-                                </span>
-                                <div>
-                                    <span>{{ info.title }}</span>
-                                    {% if info.link %}
-                                        <p class="text">
-                                            <a href="{{ info.link }}" target="_blank">{{ info.content }}</a>
-                                        </p>
-                                    {% else %}
-                                        <p class="text">{{ info.content }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endwith %}
+                    {% for element in contact_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if not parsed.type %}
+                                {% with contact_data=element.json_content|json_parse %}
+                                    {% for info in contact_data.contact_info %}
+                                        <div class="contact-item">
+                                            <span class="contact-icon flex">
+                                                <i class="{{ info.icon }}"></i>
+                                            </span>
+                                            <div>
+                                                <span>{{ info.title }}</span>
+                                                {% if info.link %}
+                                                    <p class="text">
+                                                        <a href="{{ info.link }}" target="_blank">{{ info.content }}</a>
+                                                    </p>
+                                                {% else %}
+                                                    <p class="text">{{ info.content }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     <!-- Fallback contact info if no elements in database -->
                     <div class="contact-item">

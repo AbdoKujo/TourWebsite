@@ -104,6 +104,14 @@ def create_home_page_sections(page):
         order=0
     )
     
+    # Create Header Button element
+    Element.objects.create(
+        section=header_section,
+        title="let's see our services",
+        description='',
+        order=1
+    )
+    
     # Create Featured section
     featured_section = Section.objects.create(
         page=page,
@@ -112,37 +120,60 @@ def create_home_page_sections(page):
         order=1
     )
     
-    # Create Featured elements
+    # Create Featured title and subtitle elements
+    Element.objects.create(
+        section=featured_section,
+        title='featured places',
+        description='',
+        json_content='{"type": "title"}',
+        order=0
+    )
+    
+    Element.objects.create(
+        section=featured_section,
+        title='know about some places before your travel',
+        description='',
+        json_content='{"type": "subtitle"}',
+        order=1
+    )
+    
+    # Create Featured items
     featured_items = [
         {
             'title': 'Agafay Desert',
+            'description': 'Experience the stunning rocky desert landscape just outside Marrakech.',
             'src': '/static/images/Agafay2.jpg',
-            'order': 0
-        },
-        {
-            'title': 'Ourika',
-            'src': '/static/images/Ourika6.jpg',
-            'order': 1
-        },
-        {
-            'title': 'Parapont',
-            'src': '/static/images/parapont1.jpg',
             'order': 2
         },
         {
-            'title': 'Ouzoud',
-            'src': '/static/images/Ouzoud2.jpg',
+            'title': 'Ourika',
+            'description': 'Discover the lush valleys and waterfalls of the Ourika region.',
+            'src': '/static/images/Ourika6.jpg',
             'order': 3
         },
         {
-            'title': 'Air Balloon',
-            'src': '/static/images/AirBallon2.jpg',
+            'title': 'Parapont',
+            'description': 'Soar above the Atlas Mountains with thrilling paragliding experiences.',
+            'src': '/static/images/parapont1.jpg',
             'order': 4
         },
         {
-            'title': 'Imlil',
-            'src': '/static/images/imlil3.jpg',
+            'title': 'Ouzoud',
+            'description': 'Visit the magnificent Ouzoud waterfalls, one of Morocco\'s natural wonders.',
+            'src': '/static/images/Ouzoud2.jpg',
             'order': 5
+        },
+        {
+            'title': 'Air Balloon',
+            'description': 'Float above Marrakech and enjoy breathtaking panoramic views at sunrise.',
+            'src': '/static/images/AirBallon2.jpg',
+            'order': 6
+        },
+        {
+            'title': 'Imlil',
+            'description': 'Trek through the High Atlas Mountains and experience Berber village life.',
+            'src': '/static/images/imlil3.jpg',
+            'order': 7
         }
     ]
     
@@ -150,6 +181,7 @@ def create_home_page_sections(page):
         Element.objects.create(
             section=featured_section,
             title=item['title'],
+            description=item['description'],
             src=item['src'],
             order=item['order']
         )
@@ -162,25 +194,42 @@ def create_home_page_sections(page):
         order=2
     )
     
-    # Create Services elements
+    # Create Services title and subtitle elements
+    Element.objects.create(
+        section=services_section,
+        title='Our services',
+        description='',
+        json_content='{"type": "title"}',
+        order=0
+    )
+    
+    Element.objects.create(
+        section=services_section,
+        title='',
+        description='',
+        json_content='{"type": "subtitle"}',
+        order=1
+    )
+    
+    # Create Services items
     services_items = [
         {
             'title': 'Luxury Stay',
             'description': 'Relax in stylish desert lodges and enjoy breathtaking Agafay views.',
             'json_content': 'fas fa-hotel',
-            'order': 0
+            'order': 2
         },
         {
             'title': 'Expert Travel Guide',
             'description': 'Explore Morocco with experienced guides for an unforgettable journey.',
             'json_content': 'fas fa-map-marked-alt',
-            'order': 1
+            'order': 3
         },
         {
             'title': 'Best Prices Guaranteed',
             'description': 'Enjoy top-tier services at the most competitive rates.',
             'json_content': 'fas fa-money-bill',
-            'order': 2
+            'order': 4
         }
     ]
     
@@ -201,25 +250,45 @@ def create_home_page_sections(page):
         order=3
     )
     
-    # Create Testimonials elements
+    # Create Testimonials title and subtitle elements
+    Element.objects.create(
+        section=testimonials_section,
+        title='testimonials',
+        description='',
+        json_content='{"type": "title"}',
+        order=0
+    )
+    
+    Element.objects.create(
+        section=testimonials_section,
+        title='what our clients say about us',
+        description='',
+        json_content='{"type": "subtitle"}',
+        order=1
+    )
+    
+    # Create Testimonials items
     testimonials_items = [
         {
             'title': 'Kevin Wilson',
             'description': 'An unforgettable experience! The views, the hospitality, and the adventure made our trip magical.',
             'src': '/static/images/test-1.jpg',
-            'order': 0
+            'json_content': '{"trip": "Trip to Marrakech"}',
+            'order': 2
         },
         {
             'title': 'Ben Davis',
             'description': 'Absolutely breathtaking! The desert, the food, and the peaceful vibes were beyond expectations.',
             'src': '/static/images/test-2.jpg',
-            'order': 1
+            'json_content': '{"trip": "Trip to Marrakech"}',
+            'order': 3
         },
         {
             'title': 'Jaura Jones',
             'description': 'A perfect escape! Loved the camel rides, the starry nights, and the warm hospitality.',
             'src': '/static/images/test-3.jpg',
-            'order': 2
+            'json_content': '{"trip": "Trip to Marrakech"}',
+            'order': 4
         }
     ]
     
@@ -229,6 +298,7 @@ def create_home_page_sections(page):
             title=item['title'],
             description=item['description'],
             src=item['src'],
+            json_content=item['json_content'],
             order=item['order']
         )
     
@@ -245,6 +315,95 @@ def create_home_page_sections(page):
         section=video_section,
         src='/static/videos/video-section.mp4',
         order=0
+    )
+    
+    # Create Footer section for common elements
+    footer_section = Section.objects.create(
+        page=page,
+        name='footer',
+        type='text',
+        order=5
+    )
+    
+    # Create Footer elements
+    Element.objects.create(
+        section=footer_section,
+        title='Marrakech<span>ActivitiesPortal</span>',
+        description='Discover the breathtaking beauty of Morocco, from the Atlas Mountains to the golden dunes of Merzouga. Whether you seek adventure, culture, or relaxation, Morocco offers an unforgettable journey.',
+        json_content='{"type": "logo"}',
+        order=0
+    )
+    
+    Element.objects.create(
+        section=footer_section,
+        title='Follow us on:',
+        description='',
+        json_content='{"type": "social_title"}',
+        order=1
+    )
+    
+    social_links = [
+        {
+            'title': 'facebook',
+            'src': 'https://www.facebook.com/profile.php?id=100066894364180',
+            'order': 2
+        },
+        {
+            'title': 'instagram',
+            'src': 'https://www.instagram.com/p/DGjfRSxtum4/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==',
+            'order': 3
+        },
+        {
+            'title': 'google',
+            'src': 'mailto:moubela276@gmail.com',
+            'order': 4
+        }
+    ]
+    
+    for item in social_links:
+        Element.objects.create(
+            section=footer_section,
+            title=item['title'],
+            src=item['src'],
+            json_content='{"type": "social_link"}',
+            order=item['order']
+        )
+    
+    Element.objects.create(
+        section=footer_section,
+        title='Popular Places:',
+        description='',
+        json_content='{"type": "places_title"}',
+        order=5
+    )
+    
+    popular_places = [
+        {'title': 'Imlil – Hike the Atlas Mountains', 'src': '#', 'order': 6},
+        {'title': 'La Palmeraie – Explore the palm oasis', 'src': '#', 'order': 7},
+        {'title': 'Agafay – Experience the rocky desert', 'src': '#', 'order': 8},
+        {'title': 'Air Balloon – Enjoy breathtaking aerial views', 'src': '#', 'order': 9},
+        {'title': 'Paragliding – Soar above stunning landscapes', 'src': '#', 'order': 10},
+        {'title': 'Ouzoud – Visit the majestic waterfalls', 'src': '#', 'order': 11},
+        {'title': 'Merzouga – Ride camels over golden dunes', 'src': '#', 'order': 12},
+        {'title': 'Essaouira – Enjoy coastal beauty & surfing', 'src': '#', 'order': 13},
+        {'title': 'Ourika – Discover scenic valley retreats', 'src': '#', 'order': 14}
+    ]
+    
+    for item in popular_places:
+        Element.objects.create(
+            section=footer_section,
+            title=item['title'],
+            src=item['src'],
+            json_content='{"type": "popular_place"}',
+            order=item['order']
+        )
+    
+    Element.objects.create(
+        section=footer_section,
+        title='Subscribe for Newsletter!',
+        description='',
+        json_content='{"type": "newsletter_title"}',
+        order=15
     )
 
 def create_about_page_sections(page):
@@ -372,6 +531,23 @@ def create_about_page_sections(page):
         order=2
     )
     
+    # Create Facts title elements
+    Element.objects.create(
+        section=facts_section,
+        title='FUN FACTS',
+        description='',
+        json_content='{"type": "title"}',
+        order=0
+    )
+    
+    Element.objects.create(
+        section=facts_section,
+        title='DISCOVER SOME FACTS ABOUT OUR SERVICES',
+        description='',
+        json_content='{"type": "subtitle"}',
+        order=1
+    )
+    
     # Create Facts element
     facts_json = {
         'items': [
@@ -401,7 +577,7 @@ def create_about_page_sections(page):
     Element.objects.create(
         section=facts_section,
         json_content=json.dumps(facts_json),
-        order=0
+        order=2
     )
 
 def create_gallery_page_sections(page):
@@ -432,23 +608,24 @@ def create_gallery_page_sections(page):
     
     # Create Gallery elements
     gallery_items = [
-        {'src': '/static/images/gallery-1.jpg', 'order': 0},
-        {'src': '/static/images/gallery-2.jpg', 'order': 1},
-        {'src': '/static/images/gallery-3.jpg', 'order': 2},
-        {'src': '/static/images/assaouira5.jpg', 'order': 3},
-        {'src': '/static/images/assaouira6.jpg', 'order': 4},
-        {'src': '/static/images/assaouira4.jpg', 'order': 5},
-        {'src': '/static/images/parapont4.jpg', 'order': 6},
-        {'src': '/static/images/parapont6.jpg', 'order': 7},
-        {'src': '/static/images/parapont7.jpg', 'order': 8},
-        {'src': '/static/images/Ourika5.jpg', 'order': 9},
-        {'src': '/static/images/Ouzoud4.jpg', 'order': 10},
-        {'src': '/static/images/Ourika6.jpg', 'order': 11}
+        {'src': '/static/images/gallery-1.jpg', 'title': 'Gallery Image 1', 'order': 0},
+        {'src': '/static/images/gallery-2.jpg', 'title': 'Gallery Image 2', 'order': 1},
+        {'src': '/static/images/gallery-3.jpg', 'title': 'Gallery Image 3', 'order': 2},
+        {'src': '/static/images/assaouira5.jpg', 'title': 'Essaouira View', 'order': 3},
+        {'src': '/static/images/assaouira6.jpg', 'title': 'Essaouira Beach', 'order': 4},
+        {'src': '/static/images/assaouira4.jpg', 'title': 'Essaouira Port', 'order': 5},
+        {'src': '/static/images/parapont4.jpg', 'title': 'Paragliding Experience', 'order': 6},
+        {'src': '/static/images/parapont6.jpg', 'title': 'Paragliding View', 'order': 7},
+        {'src': '/static/images/parapont7.jpg', 'title': 'Paragliding Adventure', 'order': 8},
+        {'src': '/static/images/Ourika5.jpg', 'title': 'Ourika Valley', 'order': 9},
+        {'src': '/static/images/Ouzoud4.jpg', 'title': 'Ouzoud Waterfalls', 'order': 10},
+        {'src': '/static/images/Ourika6.jpg', 'title': 'Ourika Landscape', 'order': 11}
     ]
     
     for item in gallery_items:
         Element.objects.create(
             section=gallery_section,
+            title=item.get('title', ''),
             src=item['src'],
             order=item['order']
         )
@@ -476,6 +653,23 @@ def create_contact_page_sections(page):
         page=page,
         name='contact',
         type='form',
+        order=1
+    )
+    
+    # Create Contact title elements
+    Element.objects.create(
+        section=contact_section,
+        title='contact us',
+        description='',
+        json_content='{"type": "title"}',
+        order=0
+    )
+    
+    Element.objects.create(
+        section=contact_section,
+        title='get in touch with us',
+        description='',
+        json_content='{"type": "subtitle"}',
         order=1
     )
     
@@ -513,7 +707,7 @@ def create_contact_page_sections(page):
     Element.objects.create(
         section=contact_section,
         json_content=json.dumps(contact_json),
-        order=0
+        order=2
     )
 
 def create_theme_page_sections(page):
@@ -551,18 +745,44 @@ def create_theme_page_sections(page):
         order=0
     )
     
+    # Create About Trip section
+    about_trip_section = Section.objects.create(
+        page=page,
+        name='about_trip',
+        type='text',
+        order=2
+    )
+    
+    # Create About Trip elements
+    Element.objects.create(
+        section=about_trip_section,
+        title='About This Trip',
+        description=f'This {page.name} adventure offers a perfect blend of history, nature, and culture, making it an unforgettable journey through one of Morocco\'s most iconic destinations.',
+        json_content=json.dumps({
+            'highlights': [
+                f'{page.name}: Discover the charm of this destination.',
+                'Explore the cultural and spiritual heart of Morocco.',
+                'Enjoy excursions through breathtaking landscapes.',
+                'Experience local traditions and visit historical landmarks.',
+                'Cultural Immersion: Shop in lively souks and visit museums.'
+            ]
+        }),
+        order=0
+    )
+    
     # Create Gallery section
     gallery_section = Section.objects.create(
         page=page,
         name='gallery',
         type='image',
-        order=2
+        order=3
     )
     
     # Create Gallery elements (3 images per theme)
     for i in range(1, 4):
         Element.objects.create(
             section=gallery_section,
+            title=f'{page.name} Image {i}',
             src=f'/static/images/{page.slug.lower()}{i}.jpg',
             order=i-1
         )
@@ -572,7 +792,7 @@ def create_theme_page_sections(page):
         page=page,
         name='booking',
         type='form',
-        order=3
+        order=4
     )
     
     # Create Booking elements
@@ -592,8 +812,10 @@ def create_theme_page_sections(page):
         'price': '90€ per person'
     }
     
+    
     Element.objects.create(
         section=booking_section,
+        title='Book This Trip',
         json_content=json.dumps(booking_json),
         order=0
     )

@@ -86,95 +86,53 @@
             </div>
             <div class="trip-details">
                 <div class="trip-info">
-                    <h2>About This Trip</h2>
-                    {% if description_elements %}
+                    {% if about_trip_elements %}
+                        <h2>{% editable_text about_trip_elements.0 'title' %}</h2>
+                        <p>{% editable_text about_trip_elements.0 'description' %}</p>
+                        <p></p>
+                        
+                        <div class="trip-highlights">
+                            <h3>Trip Highlights</h3>
+                            {% editable_highlights about_trip_elements.0 %}
+                        </div>
+                        
+                        <p>This adventure offers a perfect blend of history, nature, and culture, making it an unforgettable journey through Morocco's most iconic destinations.</p>
+                    {% else %}
+                        <h2>About This Trip</h2>
                         <p>{% editable_text description_elements.0 'description' %}</p>
                         <p></p>
                         
                         <div class="trip-highlights">
                             <h3>Trip Highlights</h3>
                             <ul class="highlights-list">
-                                {% with highlights=description_elements.0.json_content|json_parse %}
-                                    {% if highlights.highlights %}
-                                        {% for highlight in highlights.highlights %}
-                                            <li>{{ highlight }}</li>
-                                        {% endfor %}
-                                    {% else %}
-                                        <li>{{ page.name }}: Discover the charm of this destination.</li>
-                                        <li>Explore the cultural and spiritual heart of Morocco.</li>
-                                        <li>Enjoy excursions through breathtaking landscapes.</li>
-                                        <li>Experience local traditions and visit historical landmarks.</li>
-                                        <li>Cultural Immersion: Shop in lively souks and visit museums.</li>
-                                    {% endif %}
-                                {% endwith %}
+                                <li>{{ page.name }}: Discover the charm of this destination.</li>
+                                <li>Explore the cultural and spiritual heart of Morocco.</li>
+                                <li>Enjoy excursions through breathtaking landscapes.</li>
+                                <li>Experience local traditions and visit historical landmarks.</li>
+                                <li>Cultural Immersion: Shop in lively souks and visit museums.</li>
                             </ul>
                         </div>
                         
                         <p>This adventure offers a perfect blend of history, nature, and culture, making it an unforgettable journey through Morocco's most iconic destinations.</p>
                     {% endif %}
+                    
+                    {% if booking_elements %}
+                        {% with booking_data=booking_elements.0.json_content|json_parse %}
+                            {% if booking_data.price %}
+                                <h4>Price</h4>
+                                <p>{{ booking_data.price }}</p>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
                 </div>
                 
                 <div class="booking-form">
-                    <h3>Book This Trip</h3>
-                    <form id="booking-form">
-                        {% if booking_elements %}
-                            {% with booking_data=booking_elements.0.json_content|json_parse %}
-                                {% if booking_data.form and booking_data.form.fields %}
-                                    {% for field in booking_data.form.fields %}
-                                        <div class="form-group">
-                                            <label for="{{ field.name }}">{{ field.label }}</label>
-                                            {% if field.type == 'textarea' %}
-                                                <textarea id="{{ field.name }}" class="form-control" rows="3" {% if field.required %}required{% endif %}></textarea>
-                                            {% elif field.type == 'select' %}
-                                                <select id="{{ field.name }}" class="form-control" {% if field.required %}required{% endif %}>
-                                                    <option value="">Select</option>
-                                                    {% for option in field.options %}
-                                                        <option value="{{ option }}">{{ option }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            {% else %}
-                                                <input type="{{ field.type }}" id="{{ field.name }}" class="form-control" {% if field.required %}required{% endif %}>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <!-- Default form fields if booking data doesn't have proper structure -->
-                                    <div class="form-group">
-                                        <label for="name">Full Name</label>
-                                        <input type="text" id="name" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email">Email</label>
-                                        <input type="email" id="email" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="phone">Phone Number</label>
-                                        <input type="tel" id="phone" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="date">Trip Date</label>
-                                        <input type="date" id="date" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="guests">Number of Guests</label>
-                                        <select id="guests" class="form-control" required>
-                                            <option value="">Select</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5+</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="message">Special Requests</label>
-                                        <textarea id="message" class="form-control" rows="3"></textarea>
-                                    </div>
-                                {% endif %}
-                                <button type="button" id="whatsapp-book" class="btn-book">Book Now</button>
-                            {% endwith %}
-                        {% else %}
-                            <!-- Default booking form when no booking elements exist -->
+                    {% if booking_elements %}
+                        <h3>{% editable_text booking_elements.0 'title' %}</h3>
+                        {% editable_form booking_elements.0 %}
+                    {% else %}
+                        <h3>Book This Trip</h3>
+                        <form id="booking-form">
                             <div class="form-group">
                                 <label for="name">Full Name</label>
                                 <input type="text" id="name" class="form-control" required>
@@ -206,9 +164,31 @@
                                 <label for="message">Special Requests</label>
                                 <textarea id="message" class="form-control" rows="3"></textarea>
                             </div>
-                            <button type="button" id="default-whatsapp-book" class="btn-book">Book Now</button>
-                        {% endif %}
-                    </form>
+                            <button type="button" id="whatsapp-book" class="btn-book" onclick="sendWhatsApp()">Book Now</button>
+                        </form>
+                        
+                        <script>
+                        function sendWhatsApp() {
+                            let name = document.getElementById("name").value;
+                            let email = document.getElementById("email").value;
+                            let phone = document.getElementById("phone").value;
+                            let date = document.getElementById("date").value;
+                            let guests = document.getElementById("guests").value;
+                            let message = document.getElementById("message").value;
+                            
+                            let phoneNumber = "212643562320";
+                            let whatsappText = "Name: " + encodeURIComponent(name) + "%0A";
+                            whatsappText += "Email: " + encodeURIComponent(email) + "%0A";
+                            whatsappText += "Phone: " + encodeURIComponent(phone) + "%0A";
+                            whatsappText += "Date: " + encodeURIComponent(date) + "%0A";
+                            whatsappText += "Guests: " + encodeURIComponent(guests) + "%0A";
+                            whatsappText += "Message: " + encodeURIComponent(message);
+                            
+                            let whatsappLink = "https://wa.me/" + phoneNumber + "?text=" + whatsappText;
+                            window.location.href = whatsappLink;
+                        }
+                        </script>
+                    {% endif %}
                 </div>
             </div>
         </div> 

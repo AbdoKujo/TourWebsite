@@ -8,8 +8,20 @@
 <header class="flex">
     <div class="container">
         <div class="header-title">
-            <h1>{% editable_text header_element 'title' %}</h1>
-            <p>{% editable_text header_element 'description' %}</p>
+            <h1>
+                {% if header_elements %}
+                    {% editable_text header_elements.0 'title' %}
+                {% else %}
+                    Leave Your Footprints
+                {% endif %}
+            </h1>
+            <p>
+                {% if header_elements %}
+                    {% editable_text header_elements.0 'description' %}
+                {% else %}
+                    Discover the magic of Morocco, a land of breathtaking landscapes, rich culture, and unforgettable adventures. From the golden dunes of the Sahara to the vibrant souks of Marrakech, explore ancient medinas, majestic mountains, and stunning coastal towns. Experience the warmth of Moroccan hospitality, savor traditional cuisine, and embark on a journey full of history, adventure, and beauty.
+                {% endif %}
+            </p>
         </div>
     </div>
 </header>
@@ -18,7 +30,11 @@
 <div class="btn-container">
     <a href="{% url 'page_detail' 'about' %}" class="sunset-btn">
         <span>
-                {% editable_text header_button_element 'title' %}
+            {% if header_elements and header_elements|length > 1 %}
+                {% editable_text header_elements.1 'title' %}
+            {% else %}
+                let's see our services
+            {% endif %}
         </span>
     </a>
 </div>
@@ -28,15 +44,27 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if featured_subtitle_element %}
-                    {% editable_text featured_subtitle_element 'title' %}
+                {% if featured_elements %}
+                    {% for element in featured_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'subtitle' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     know about some places before your travel
                 {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if featured_title_element %}
-                    {% editable_text featured_title_element 'title' %}
+                {% if featured_elements %}
+                    {% for element in featured_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     featured places
                 {% endif %}
@@ -46,34 +74,25 @@
         <div class="featured-row">
             {% if featured_elements %}
                 {% for element in featured_elements %}
-                    <div class="featured-item my-2 shadow">
-                        {% editable_image element 'img-fluid' %}
-                        <div class="featured-item-content">
-                            <span>
-                                <i class="fas fa-map-marker-alt"></i>
-                                {% editable_text element 'title' %}
-                            </span>
-                            <div>
-                                <p class="text">{% editable_text element 'description' %}</p>
+                    {% with parsed=element.json_content|json_parse %}
+                        {% if not parsed.type %}
+                            <div class="featured-item my-2 shadow">
+                                {% editable_image element %}
+                                <div class="featured-item-content">
+                                    <span>
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {% editable_text element 'title' %}
+                                    </span>
+                                    <div>
+                                        <p class="text">{% editable_text element 'description' %}</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        {% endif %}
+                    {% endwith %}
                 {% endfor %}
             {% else %}
-                <!-- Default featured items if no database content -->
-                <div class="featured-item my-2 shadow">
-                    <img src="{% static 'images/Agafay2.jpg' %}" alt="featured place">
-                    <div class="featured-item-content">
-                        <span>
-                            <i class="fas fa-map-marker-alt"></i>
-                            Agafay Desert
-                        </span>
-                        <div>
-                            <p class="text"></p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Add more default featured items as needed -->
+                <!-- Default content -->
             {% endif %}
         </div>
     </div>
@@ -85,15 +104,25 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if services_subtitle_element %}
-                    {% editable_text services_subtitle_element 'title' %}
-                {% else %}
-                    
+                {% if services_elements %}
+                    {% for element in services_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'subtitle' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if services_title_element %}
-                    {% editable_text services_title_element 'title' %}
+                {% if services_elements %}
+                    {% for element in services_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     Our services
                 {% endif %}
@@ -103,16 +132,20 @@
         <div class="services-row">
             {% if services_elements %}
                 {% for element in services_elements %}
-                    <div class="services-item">
-                        <span class="services-icon">
-                            <i class="{{ element.json_content|default:'fas fa-hotel' }}"></i>
-                        </span>
-                        <h3>{% editable_text element 'title' %}</h3>
-                        <p class="text">{% editable_text element 'description' %}</p>
-                    </div>
+                    {% with parsed=element.json_content|json_parse %}
+                        {% if not parsed.type %}
+                            <div class="services-item">
+                                <span class="services-icon">
+                                    <i class="{{ element.json_content }}"></i>
+                                </span>
+                                <h3>{% editable_text element 'title' %}</h3>
+                                <p class="text">{% editable_text element 'description' %}</p>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
                 {% endfor %}
             {% else %}
-                <!-- Default services items if no database content -->
+                <!-- Default services items -->
                 <div class="services-item">
                     <span class="services-icon">
                         <i class="fas fa-hotel"></i>
@@ -132,15 +165,27 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if testimonials_subtitle_element %}
-                    {% editable_text testimonials_subtitle_element 'title' %}
+                {% if testimonials_elements %}
+                    {% for element in testimonials_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'subtitle' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     what our clients say about us
                 {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if testimonials_title_element %}
-                    {% editable_text testimonials_title_element 'title' %}
+                {% if testimonials_elements %}
+                    {% for element in testimonials_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     testimonials
                 {% endif %}
@@ -148,21 +193,27 @@
         </div>
 
         <div class="test-row">
-            {% if testimonial_elements %}
-                {% for element in testimonial_elements %}
-                    <div class="test-item">
-                        <p class="text">{% editable_text element 'description' %}</p>
-                        <div class="test-item-info">
-                            {% editable_image element 'img-fluid' %}
-                            <div>
-                                <h3>{% editable_text element 'title' %}</h3>
-                                <p class="text">Trip to Marrakech</p>
+            {% if testimonials_elements %}
+                {% for element in testimonials_elements %}
+                    {% with parsed=element.json_content|json_parse %}
+                        {% if not parsed.type %}
+                            <div class="test-item">
+                                <p class="text">{% editable_text element 'description' %}</p>
+                                <div class="test-item-info">
+                                    {% editable_image element %}
+                                    <div>
+                                        <h3>{% editable_text element 'title' %}</h3>
+                                        <p class="text">
+                                            {{ parsed.trip|default:"Trip to Marrakech" }}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        {% endif %}
+                    {% endwith %}
                 {% endfor %}
             {% else %}
-                <!-- Default testimonial items if no database content -->
+                <!-- Default testimonial items -->
                 <div class="test-item">
                     <p class="text">An unforgettable experience! The views, the hospitality, and the adventure made our trip magical.</p>
                     <div class="test-item-info">
@@ -183,8 +234,8 @@
 <!-- video section -->
 <section id="video">
     <div class="video-wrapper flex">
-        {% if video_element %}
-            {% editable_video video_element %}
+        {% if video_elements %}
+            {% editable_video video_elements.0 %}
         {% else %}
             <video loop>
                 <source src="{% static 'videos/video-section.mp4' %}" type="video/mp4">

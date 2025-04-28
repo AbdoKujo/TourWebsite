@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initEditableText()
   initEditableImages()
   initEditableVideos()
+  initEditableJson()
+  initEditableHighlights()
 
   // Add edit mode toggle button
   addEditModeToggle()
@@ -31,6 +33,9 @@ function initEditableText() {
       const originalText = element.innerText
       const elementId = element.dataset.elementId
       const fieldName = element.dataset.field || "description"
+      const highlightItem = element.dataset.highlightItem || null
+      const submitText = element.dataset.submitText || null
+      const formField = element.dataset.formField || null
 
       // Create textarea for editing
       const textarea = document.createElement("textarea")
@@ -58,31 +63,49 @@ function initEditableText() {
       saveBtn.addEventListener("click", () => {
         const newText = textarea.value
 
-        // Send update to server
-        const formData = new FormData()
-        formData.append("field", fieldName)
-        formData.append("value", newText)
+        // Handle special cases for JSON content
+        if (fieldName === "json_content") {
+          let jsonData = {}
 
-        fetch(`/dashboard/element/${elementId}/update/`, {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              // Update the element with new text
-              element.innerHTML = newText
-              showNotification("Content updated successfully")
+          try {
+            // Try to parse existing JSON
+            jsonData = JSON.parse(element.dataset.jsonContent || "{}")
+          } catch (error) {
+            console.error("Error parsing JSON:", error)
+            jsonData = {}
+          }
+
+          // Update specific parts of JSON based on data attributes
+          if (highlightItem) {
+            // Update a highlight item in the highlights array
+            if (!jsonData.highlights) jsonData.highlights = []
+            const index = jsonData.highlights.indexOf(highlightItem)
+            if (index !== -1) {
+              jsonData.highlights[index] = newText
             } else {
-              showNotification("Error updating content", "error")
-              element.innerHTML = originalText
+              jsonData.highlights.push(newText)
             }
-          })
-          .catch((error) => {
-            console.error("Error:", error)
-            showNotification("Error updating content", "error")
-            element.innerHTML = originalText
-          })
+          } else if (submitText) {
+            // Update submit text in form
+            if (!jsonData.form) jsonData.form = {}
+            jsonData.form.submit_text = newText
+          } else if (formField) {
+            // Update form field label
+            if (!jsonData.form) jsonData.form = {}
+            if (!jsonData.form.fields) jsonData.form.fields = []
+
+            const fieldIndex = jsonData.form.fields.findIndex((f) => f.name === formField)
+            if (fieldIndex !== -1) {
+              jsonData.form.fields[fieldIndex].label = newText
+            }
+          }
+
+          // Send the updated JSON to the server
+          sendUpdate(elementId, fieldName, JSON.stringify(jsonData), originalText, element)
+        } else {
+          // Regular text update
+          sendUpdate(elementId, fieldName, newText, originalText, element)
+        }
       })
 
       // Cancel button click handler
@@ -91,6 +114,34 @@ function initEditableText() {
       })
     })
   })
+}
+
+function sendUpdate(elementId, fieldName, newValue, originalText, element) {
+  // Send update to server
+  const formData = new FormData()
+  formData.append("field", fieldName)
+  formData.append("value", newValue)
+
+  fetch(`/dashboard/element/${elementId}/update/`, {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        // Update the element with new text
+        element.innerHTML = newValue
+        showNotification("Content updated successfully")
+      } else {
+        showNotification("Error updating content", "error")
+        element.innerHTML = originalText
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error)
+      showNotification("Error updating content", "error")
+      element.innerHTML = originalText
+    })
 }
 
 function initEditableImages() {
@@ -254,6 +305,228 @@ function initEditableVideos() {
       // Cancel button click handler
       cancelBtn.addEventListener("click", () => {
         document.body.removeChild(modal)
+      })
+    })
+  })
+}
+
+function initEditableJson() {
+  // Find all elements with data-editable="json" attribute
+  const editableJsonElements = document.querySelectorAll('[data-editable="json"]')
+
+  editableJsonElements.forEach((element) => {
+    // Add edit indicator
+    element.classList.add("editable-json")
+
+    // Add click event to make JSON editable
+    element.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      // If already in edit state, return
+      if (element.querySelector("textarea")) return
+
+      const elementId = element.dataset.elementId
+      const fieldName = element.dataset.field || "json_content"
+
+      // Fetch the full JSON content from the server
+      fetch(`/dashboard/element/${elementId}/get/`)
+        .then((response) => response.json())
+        .then((data) => {
+          const jsonContent = data.json_content || "{}"
+
+          // Create modal for JSON editing
+          const modal = document.createElement("div")
+          modal.classList.add("edit-modal")
+
+          const modalContent = document.createElement("div")
+          modalContent.classList.add("edit-modal-content")
+          modalContent.style.width = "80%"
+          modalContent.style.maxWidth = "800px"
+
+          const title = document.createElement("h3")
+          title.innerText = "Edit JSON Content"
+
+          const jsonEditor = document.createElement("textarea")
+          jsonEditor.value = jsonContent
+          jsonEditor.style.width = "100%"
+          jsonEditor.style.height = "400px"
+          jsonEditor.style.fontFamily = "monospace"
+
+          const saveBtn = document.createElement("button")
+          saveBtn.innerText = "Save"
+          saveBtn.classList.add("edit-save-btn")
+
+          const cancelBtn = document.createElement("button")
+          cancelBtn.innerText = "Cancel"
+          cancelBtn.classList.add("edit-cancel-btn")
+
+          modalContent.appendChild(title)
+          modalContent.appendChild(jsonEditor)
+          modalContent.appendChild(document.createElement("br"))
+          modalContent.appendChild(saveBtn)
+          modalContent.appendChild(cancelBtn)
+          modal.appendChild(modalContent)
+          document.body.appendChild(modal)
+
+          // Save button click handler
+          saveBtn.addEventListener("click", () => {
+            try {
+              // Validate JSON
+              JSON.parse(jsonEditor.value)
+
+              // Send update to server
+              const formData = new FormData()
+              formData.append("field", fieldName)
+              formData.append("value", jsonEditor.value)
+
+              fetch(`/dashboard/element/${elementId}/update/`, {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    showNotification("JSON content updated successfully")
+                    // Reload the page to reflect changes
+                    window.location.reload()
+                  } else {
+                    showNotification("Error updating JSON content", "error")
+                  }
+
+                  // Remove modal
+                  document.body.removeChild(modal)
+                })
+                .catch((error) => {
+                  console.error("Error:", error)
+                  showNotification("Error updating JSON content", "error")
+                  document.body.removeChild(modal)
+                })
+            } catch (error) {
+              showNotification("Invalid JSON format", "error")
+            }
+          })
+
+          // Cancel button click handler
+          cancelBtn.addEventListener("click", () => {
+            document.body.removeChild(modal)
+          })
+        })
+        .catch((error) => {
+          console.error("Error fetching element data:", error)
+          showNotification("Error fetching element data", "error")
+        })
+    })
+  })
+}
+
+function initEditableHighlights() {
+  // Find all elements with data-highlight-item attribute
+  const editableHighlights = document.querySelectorAll("[data-highlight-item]")
+
+  editableHighlights.forEach((element) => {
+    // Add edit indicator
+    element.classList.add("editable-text")
+
+    // Add click event to make highlight editable
+    element.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      // If already in edit state, return
+      if (element.querySelector("textarea")) return
+
+      const originalText = element.innerText
+      const elementId = element.dataset.elementId
+      const fieldName = element.dataset.field || "json_content"
+      const highlightItem = element.dataset.highlightItem
+
+      // Create textarea for editing
+      const textarea = document.createElement("textarea")
+      textarea.value = originalText
+      textarea.classList.add("editable-textarea")
+
+      // Replace content with textarea
+      element.innerText = ""
+      element.appendChild(textarea)
+      textarea.focus()
+
+      // Add save button
+      const saveBtn = document.createElement("button")
+      saveBtn.innerText = "Save"
+      saveBtn.classList.add("edit-save-btn")
+      element.appendChild(saveBtn)
+
+      // Add cancel button
+      const cancelBtn = document.createElement("button")
+      cancelBtn.innerText = "Cancel"
+      cancelBtn.classList.add("edit-cancel-btn")
+      element.appendChild(cancelBtn)
+
+      // Save button click handler
+      saveBtn.addEventListener("click", () => {
+        const newText = textarea.value
+
+        // Fetch the current JSON content
+        fetch(`/dashboard/element/${elementId}/get/`)
+          .then((response) => response.json())
+          .then((data) => {
+            let jsonData = {}
+
+            try {
+              jsonData = JSON.parse(data.json_content || "{}")
+            } catch (error) {
+              jsonData = {}
+            }
+
+            // Update the highlight in the highlights array
+            if (!jsonData.highlights) jsonData.highlights = []
+
+            const index = jsonData.highlights.indexOf(highlightItem)
+            if (index !== -1) {
+              jsonData.highlights[index] = newText
+            } else {
+              jsonData.highlights.push(newText)
+            }
+
+            // Send the updated JSON to the server
+            const formData = new FormData()
+            formData.append("field", fieldName)
+            formData.append("value", JSON.stringify(jsonData))
+
+            fetch(`/dashboard/element/${elementId}/update/`, {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  // Update the element with new text
+                  element.innerHTML = newText
+                  // Update the data attribute
+                  element.dataset.highlightItem = newText
+                  showNotification("Highlight updated successfully")
+                } else {
+                  showNotification("Error updating highlight", "error")
+                  element.innerHTML = originalText
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error)
+                showNotification("Error updating highlight", "error")
+                element.innerHTML = originalText
+              })
+          })
+          .catch((error) => {
+            console.error("Error fetching element data:", error)
+            showNotification("Error fetching element data", "error")
+            element.innerHTML = originalText
+          })
+      })
+
+      // Cancel button click handler
+      cancelBtn.addEventListener("click", () => {
+        element.innerHTML = originalText
       })
     })
   })
