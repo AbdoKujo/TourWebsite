@@ -57,8 +57,6 @@ def page_detail(request, slug):
     
     return render(request, template_name, context)
 
-# Add this function to your views.py file
-
 def theme_page(request, slug):
     """View for theme pages"""
     page = get_object_or_404(Page, slug=slug, type='theme')
@@ -104,6 +102,31 @@ def toggle_edit_mode(request):
 def edit_page(request, page_id):
     page = get_object_or_404(Page, id=page_id)
     sections = page.sections.all().prefetch_related('elements')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_section':
+            # Create a new section
+            name = request.POST.get('name')
+            section_type = request.POST.get('type')
+            order = request.POST.get('order', 0)
+            
+            Section.objects.create(
+                page=page,
+                name=name,
+                type=section_type,
+                order=order
+            )
+            return redirect('edit_page', page_id=page.id)
+        else:
+            # Update page details
+            page.name = request.POST.get('name', page.name)
+            page.type = request.POST.get('type', page.type)
+            page.slug = request.POST.get('slug', page.slug)
+            page.save()
+            return redirect('edit_page', page_id=page.id)
+    
     return render(request, 'dashboard/edit_page.html', {
         'page': page,
         'sections': sections,
@@ -113,6 +136,50 @@ def edit_page(request, page_id):
 def edit_section(request, section_id):
     section = get_object_or_404(Section, id=section_id)
     elements = section.elements.all()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_element':
+            # Create a new element
+            title = request.POST.get('title', '')
+            description = request.POST.get('description', '')
+            json_content = request.POST.get('json_content', '')
+            src = request.POST.get('src', '')
+            order = request.POST.get('order', 0)
+            
+            # Handle file upload
+            file = request.FILES.get('file')
+            if file:
+                upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                filename = f"uploads/{file.name}"
+                filepath = os.path.join(settings.MEDIA_ROOT, filename)
+                
+                with open(filepath, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+                
+                src = f"/media/{filename}"
+            
+            Element.objects.create(
+                section=section,
+                title=title,
+                description=description,
+                json_content=json_content,
+                src=src,
+                order=order
+            )
+            return redirect('edit_section', section_id=section.id)
+        else:
+            # Update section details
+            section.name = request.POST.get('name', section.name)
+            section.type = request.POST.get('type', section.type)
+            section.order = request.POST.get('order', section.order)
+            section.save()
+            return redirect('edit_section', section_id=section.id)
+    
     return render(request, 'dashboard/edit_section.html', {
         'section': section,
         'elements': elements,
@@ -151,6 +218,20 @@ def update_element(request, element_id):
     )
     
     return JsonResponse({'success': True})
+
+@login_required
+def get_element(request, element_id):
+    """Get element data for editing"""
+    element = get_object_or_404(Element, id=element_id)
+    
+    return JsonResponse({
+        'id': element.id,
+        'title': element.title,
+        'description': element.description,
+        'json_content': element.json_content,
+        'src': element.src,
+        'order': element.order
+    })
 
 @login_required
 @csrf_exempt

@@ -9,10 +9,124 @@ document.addEventListener("DOMContentLoaded", () => {
   initEditableVideos()
   initEditableJson()
   initEditableHighlights()
+  initEditableLinks() // Add this new function call
 
   // Add edit mode toggle button
   addEditModeToggle()
 })
+
+// Update the sendUpdate function to handle errors better and check if element exists
+function sendUpdate(elementId, fieldName, newValue, originalText, element) {
+  // For JSON content, we need special handling to update only the specific part
+  if (fieldName === "json_content") {
+    // Fetch the current complete JSON content first
+    fetch(`/dashboard/element/${elementId}/get/`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+        }
+        return response.json()
+      })
+      .then((data) => {
+        let jsonData = {}
+
+        try {
+          // Parse existing complete JSON
+          jsonData = JSON.parse(data.json_content || "{}")
+        } catch (error) {
+          console.error("Error parsing JSON:", error)
+          jsonData = {}
+        }
+
+        // Try to parse the new value as JSON
+        let newJsonValue
+        try {
+          newJsonValue = JSON.parse(newValue)
+
+          // If the new value is a complete JSON object, use it directly
+          if (typeof newJsonValue === "object" && newJsonValue !== null) {
+            jsonData = newJsonValue
+          }
+        } catch (error) {
+          // If not valid JSON, it might be a specific field update
+          // The specific field updates are handled in the click handlers
+          // This block is for direct JSON edits
+          console.log("Not updating complete JSON object")
+        }
+
+        // Send the updated JSON to the server
+        const formData = new FormData()
+        formData.append("field", fieldName)
+        formData.append("value", JSON.stringify(jsonData))
+
+        fetch(`/dashboard/element/${elementId}/update/`, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+            }
+            return response.json()
+          })
+          .then((data) => {
+            if (data.success) {
+              // Update the element with new text if it's displayed
+              if (!element.dataset.highlightItem && !element.dataset.submitText && !element.dataset.formField) {
+                element.innerHTML = newValue
+              } else {
+                element.innerHTML = originalText
+              }
+              showNotification("Content updated successfully")
+            } else {
+              showNotification("Error updating content", "error")
+              element.innerHTML = originalText
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating content:", error)
+            showNotification("Error updating content", "error")
+            element.innerHTML = originalText
+          })
+      })
+      .catch((error) => {
+        console.error("Error fetching element data:", error)
+        showNotification(`Error fetching element data: ${error.message}`, "error")
+        element.innerHTML = originalText
+      })
+  } else {
+    // Regular text update (non-JSON fields)
+    const formData = new FormData()
+    formData.append("field", fieldName)
+    formData.append("value", newValue)
+
+    fetch(`/dashboard/element/${elementId}/update/`, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+        }
+        return response.json()
+      })
+      .then((data) => {
+        if (data.success) {
+          // Update the element with new text
+          element.innerHTML = newValue
+          showNotification("Content updated successfully")
+        } else {
+          showNotification("Error updating content", "error")
+          element.innerHTML = originalText
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error)
+        showNotification("Error updating content", "error")
+        element.innerHTML = originalText
+      })
+  }
+}
 
 function initEditableText() {
   // Find all elements with data-editable="text" attribute
@@ -65,46 +179,110 @@ function initEditableText() {
 
         // Handle special cases for JSON content
         if (fieldName === "json_content") {
-          let jsonData = {}
+          // Fetch the current complete JSON content first
+          fetch(`/dashboard/element/${elementId}/get/`)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+              }
+              return response.json()
+            })
+            .then((data) => {
+              let jsonData = {}
 
-          try {
-            // Try to parse existing JSON
-            jsonData = JSON.parse(element.dataset.jsonContent || "{}")
-          } catch (error) {
-            console.error("Error parsing JSON:", error)
-            jsonData = {}
-          }
+              try {
+                // Parse the COMPLETE existing JSON
+                jsonData = JSON.parse(data.json_content || "{}")
+              } catch (error) {
+                console.error("Error parsing JSON:", error)
+                jsonData = {}
+              }
 
-          // Update specific parts of JSON based on data attributes
-          if (highlightItem) {
-            // Update a highlight item in the highlights array
-            if (!jsonData.highlights) jsonData.highlights = []
-            const index = jsonData.highlights.indexOf(highlightItem)
-            if (index !== -1) {
-              jsonData.highlights[index] = newText
-            } else {
-              jsonData.highlights.push(newText)
-            }
-          } else if (submitText) {
-            // Update submit text in form
-            if (!jsonData.form) jsonData.form = {}
-            jsonData.form.submit_text = newText
-          } else if (formField) {
-            // Update form field label
-            if (!jsonData.form) jsonData.form = {}
-            if (!jsonData.form.fields) jsonData.form.fields = []
+              // Update specific parts of JSON based on data attributes
+              // while preserving all other data
+              if (highlightItem) {
+                // Update a highlight item in the highlights array
+                if (!jsonData.highlights) jsonData.highlights = []
+                const index = jsonData.highlights.indexOf(highlightItem)
+                if (index !== -1) {
+                  jsonData.highlights[index] = newText
+                } else {
+                  jsonData.highlights.push(newText)
+                }
+              } else if (submitText) {
+                // Update submit text in form
+                if (!jsonData.form) jsonData.form = {}
+                jsonData.form.submit_text = newText
+                // Preserve other form data
+              } else if (formField) {
+                // Update form field label
+                if (!jsonData.form) jsonData.form = {}
+                if (!jsonData.form.fields) jsonData.form.fields = []
 
-            const fieldIndex = jsonData.form.fields.findIndex((f) => f.name === formField)
-            if (fieldIndex !== -1) {
-              jsonData.form.fields[fieldIndex].label = newText
-            }
-          }
+                const fieldIndex = jsonData.form.fields.findIndex((f) => f.name === formField)
+                if (fieldIndex !== -1) {
+                  // Update just the label while preserving other field properties
+                  jsonData.form.fields[fieldIndex].label = newText
+                }
+              }
 
-          // Send the updated JSON to the server
-          sendUpdate(elementId, fieldName, JSON.stringify(jsonData), originalText, element)
+              // Send the COMPLETE updated JSON to the server
+              const formData = new FormData()
+              formData.append("field", fieldName)
+              formData.append("value", JSON.stringify(jsonData))
+
+              fetch(`/dashboard/element/${elementId}/update/`, {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    // Update the element with new text
+                    element.innerHTML = newText
+                    showNotification("Content updated successfully")
+                  } else {
+                    showNotification("Error updating content", "error")
+                    element.innerHTML = originalText
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error)
+                  showNotification("Error updating content", "error")
+                  element.innerHTML = originalText
+                })
+            })
+            .catch((error) => {
+              console.error("Error fetching element data:", error)
+              showNotification("Error fetching element data", "error")
+              element.innerHTML = originalText
+            })
         } else {
           // Regular text update
-          sendUpdate(elementId, fieldName, newText, originalText, element)
+          const formData = new FormData()
+          formData.append("field", fieldName)
+          formData.append("value", newText)
+
+          fetch(`/dashboard/element/${elementId}/update/`, {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Update the element with new text
+                element.innerHTML = newText
+                showNotification("Content updated successfully")
+              } else {
+                showNotification("Error updating content", "error")
+                element.innerHTML = originalText
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error)
+              showNotification("Error updating content", "error")
+              element.innerHTML = originalText
+            })
         }
       })
 
@@ -114,34 +292,6 @@ function initEditableText() {
       })
     })
   })
-}
-
-function sendUpdate(elementId, fieldName, newValue, originalText, element) {
-  // Send update to server
-  const formData = new FormData()
-  formData.append("field", fieldName)
-  formData.append("value", newValue)
-
-  fetch(`/dashboard/element/${elementId}/update/`, {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        // Update the element with new text
-        element.innerHTML = newValue
-        showNotification("Content updated successfully")
-      } else {
-        showNotification("Error updating content", "error")
-        element.innerHTML = originalText
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error)
-      showNotification("Error updating content", "error")
-      element.innerHTML = originalText
-    })
 }
 
 function initEditableImages() {
@@ -310,6 +460,7 @@ function initEditableVideos() {
   })
 }
 
+// Update the initEditableJson function to handle errors better
 function initEditableJson() {
   // Find all elements with data-editable="json" attribute
   const editableJsonElements = document.querySelectorAll('[data-editable="json"]')
@@ -331,7 +482,12 @@ function initEditableJson() {
 
       // Fetch the full JSON content from the server
       fetch(`/dashboard/element/${elementId}/get/`)
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+          }
+          return response.json()
+        })
         .then((data) => {
           const jsonContent = data.json_content || "{}"
 
@@ -384,7 +540,12 @@ function initEditableJson() {
                 method: "POST",
                 body: formData,
               })
-                .then((response) => response.json())
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+                  }
+                  return response.json()
+                })
                 .then((data) => {
                   if (data.success) {
                     showNotification("JSON content updated successfully")
@@ -399,7 +560,7 @@ function initEditableJson() {
                 })
                 .catch((error) => {
                   console.error("Error:", error)
-                  showNotification("Error updating JSON content", "error")
+                  showNotification(`Error updating JSON content: ${error.message}`, "error")
                   document.body.removeChild(modal)
                 })
             } catch (error) {
@@ -414,7 +575,7 @@ function initEditableJson() {
         })
         .catch((error) => {
           console.error("Error fetching element data:", error)
-          showNotification("Error fetching element data", "error")
+          showNotification(`Error fetching element data: ${error.message}`, "error")
         })
     })
   })
@@ -469,27 +630,37 @@ function initEditableHighlights() {
 
         // Fetch the current JSON content
         fetch(`/dashboard/element/${elementId}/get/`)
-          .then((response) => response.json())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+            }
+            return response.json()
+          })
           .then((data) => {
             let jsonData = {}
 
             try {
+              // Parse the COMPLETE existing JSON
               jsonData = JSON.parse(data.json_content || "{}")
             } catch (error) {
+              console.error("Error parsing JSON:", error)
               jsonData = {}
             }
 
-            // Update the highlight in the highlights array
+            // Update ONLY the specific highlight in the highlights array
+            // while preserving all other data
             if (!jsonData.highlights) jsonData.highlights = []
 
             const index = jsonData.highlights.indexOf(highlightItem)
             if (index !== -1) {
+              // Replace the specific highlight at its original position
               jsonData.highlights[index] = newText
             } else {
+              // If not found (shouldn't happen), add it
               jsonData.highlights.push(newText)
             }
 
-            // Send the updated JSON to the server
+            // Send the COMPLETE updated JSON to the server
             const formData = new FormData()
             formData.append("field", fieldName)
             formData.append("value", JSON.stringify(jsonData))
@@ -527,6 +698,131 @@ function initEditableHighlights() {
       // Cancel button click handler
       cancelBtn.addEventListener("click", () => {
         element.innerHTML = originalText
+      })
+    })
+  })
+}
+
+// Add this new function to handle editable links
+function initEditableLinks() {
+  // Find all elements with data-editable="link" attribute
+  const editableLinks = document.querySelectorAll('[data-editable="link"]')
+
+  editableLinks.forEach((element) => {
+    // Add edit indicator
+    element.classList.add("editable-link")
+
+    // Add click event to make link editable
+    element.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      // If already in edit state, return
+      if (element.querySelector("input")) return
+
+      const originalHref = element.getAttribute("href")
+      const originalText = element.innerText
+      const elementId = element.dataset.elementId
+      const fieldName = element.dataset.field || "src"
+      const textField = element.dataset.textField || "title"
+
+      // Create modal for link editing
+      const modal = document.createElement("div")
+      modal.classList.add("edit-modal")
+
+      const modalContent = document.createElement("div")
+      modalContent.classList.add("edit-modal-content")
+
+      const urlLabel = document.createElement("label")
+      urlLabel.innerText = "Link URL:"
+
+      const urlInput = document.createElement("input")
+      urlInput.type = "text"
+      urlInput.value = originalHref
+      urlInput.style.width = "100%"
+      urlInput.style.marginBottom = "10px"
+
+      const textLabel = document.createElement("label")
+      textLabel.innerText = "Link Text:"
+
+      const textInput = document.createElement("input")
+      textInput.type = "text"
+      textInput.value = originalText
+      textInput.style.width = "100%"
+      textInput.style.marginBottom = "20px"
+
+      const saveBtn = document.createElement("button")
+      saveBtn.innerText = "Save"
+      saveBtn.classList.add("edit-save-btn")
+
+      const cancelBtn = document.createElement("button")
+      cancelBtn.innerText = "Cancel"
+      cancelBtn.classList.add("edit-cancel-btn")
+
+      modalContent.appendChild(urlLabel)
+      modalContent.appendChild(urlInput)
+      modalContent.appendChild(textLabel)
+      modalContent.appendChild(textInput)
+      modalContent.appendChild(saveBtn)
+      modalContent.appendChild(cancelBtn)
+      modal.appendChild(modalContent)
+      document.body.appendChild(modal)
+
+      // Save button click handler
+      saveBtn.addEventListener("click", () => {
+        const newHref = urlInput.value
+        const newText = textInput.value
+
+        // Update URL
+        const urlFormData = new FormData()
+        urlFormData.append("field", fieldName)
+        urlFormData.append("value", newHref)
+
+        fetch(`/dashboard/element/${elementId}/update/`, {
+          method: "POST",
+          body: urlFormData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              element.setAttribute("href", newHref)
+
+              // Now update the text
+              const textFormData = new FormData()
+              textFormData.append("field", textField)
+              textFormData.append("value", newText)
+
+              return fetch(`/dashboard/element/${elementId}/update/`, {
+                method: "POST",
+                body: textFormData,
+              })
+            } else {
+              throw new Error("Failed to update URL")
+            }
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              element.innerText = newText
+              showNotification("Link updated successfully")
+            } else {
+              showNotification("Error updating link text", "error")
+              element.innerText = originalText
+            }
+            document.body.removeChild(modal)
+          })
+          .catch((error) => {
+            console.error("Error:", error)
+            showNotification("Error updating link", "error")
+            element.setAttribute("href", originalHref)
+            element.innerText = originalText
+            document.body.removeChild(modal)
+          })
+      })
+
+      // Cancel button click handler
+      cancelBtn.addEventListener("click", () => {
+        document.body.removeChild(modal)
       })
     })
   })

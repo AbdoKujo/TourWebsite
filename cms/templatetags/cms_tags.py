@@ -174,7 +174,12 @@ def editable_form(context, element):
         submit_text = 'Submit'
         whatsapp_number = '212643562320'
     
-    html = '<form class="contact-form" onsubmit="sendWhatsApp(); return false;">'
+    # Wrap the entire form in a div with data-editable="json" when in edit mode
+    if edit_mode:
+        html = f'<div data-editable="json" data-element-id="{element.id}">'
+        html += '<form class="contact-form" onsubmit="sendWhatsApp(); return false;">'
+    else:
+        html = '<form class="contact-form" onsubmit="sendWhatsApp(); return false;">'
     
     for field in fields:
         field_name = field.get('name', '')
@@ -184,9 +189,6 @@ def editable_form(context, element):
         field_options = field.get('options', [])
         
         required_attr = 'required' if field_required else ''
-        
-        if edit_mode:
-            html += f'<div data-editable="json" data-element-id="{element.id}" data-field="json_content" data-form-field="{field_name}">'
         
         if field_type == 'textarea':
             html += f'<textarea rows="4" class="form-control" id="{field_name}" placeholder="{field_label}" style="resize: none;" {required_attr}></textarea>'
@@ -198,19 +200,12 @@ def editable_form(context, element):
             html += '</select>'
         else:
             html += f'<input type="{field_type}" class="form-control" id="{field_name}" placeholder="{field_label}" {required_attr}>'
-        
-        if edit_mode:
-            html += '</div>'
-    
-    if edit_mode:
-        html += f'<div data-editable="text" data-element-id="{element.id}" data-field="json_content" data-submit-text="{submit_text}">'
     
     html += f'<button type="submit" class="btn">{submit_text}</button>'
+    html += '</form>'
     
     if edit_mode:
         html += '</div>'
-    
-    html += '</form>'
     
     # Add WhatsApp script
     html += f'''
@@ -239,3 +234,24 @@ def editable_form(context, element):
     '''
     
     return mark_safe(html)
+
+@register.simple_tag(takes_context=True)
+def editable_link(context, element, field='src', text_field='title', css_class=''):
+    """
+    Renders a link that can be edited in edit mode.
+    
+    Usage:
+    {% editable_link element %}
+    """
+    edit_mode = context.get('edit_mode', False)
+    
+    if not element:
+        return ''
+    
+    href = getattr(element, field, '#')
+    text = getattr(element, text_field, 'Link')
+    
+    if edit_mode:
+        return mark_safe(f'<a href="{href}" class="{css_class}" data-editable="link" data-element-id="{element.id}" data-field="{field}" data-text-field="{text_field}">{text}</a>')
+    else:
+        return mark_safe(f'<a href="{href}" class="{css_class}">{text}</a>')

@@ -4,15 +4,27 @@
     <div class="container footer-row">
         <div class="footer-item">
             <a href="{% url 'home' %}" class="site-brand">
-                {% if footer_logo_element %}
-                    {% editable_text footer_logo_element 'title' %}
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'logo' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
-                    Marrakech<span>Activities<span>Portal</span>
+                    Marrakech<span>Activities</span>Portal
                 {% endif %}
             </a>
             <p class="text">
-                {% if footer_description_element %}
-                    {% editable_text footer_description_element 'description' %}
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'logo' %}
+                                {% editable_text element 'description' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     Discover the breathtaking beauty of Morocco, from the Atlas Mountains to the golden dunes of Merzouga. Whether you seek adventure, culture, or relaxation, Morocco offers an unforgettable journey.
                 {% endif %}
@@ -20,48 +32,66 @@
         </div>
 
         <div class="footer-item">
-            <div class="footer-item">
-                <h2>
-                    {% if footer_social_title_element %}
-                        {% editable_text footer_social_title_element 'title' %}
-                    {% else %}
-                        Follow us on:
-                    {% endif %}
-                </h2>
-                <div class="social-buttons">
-                    {% if footer_social_elements %}
-                        {% for element in footer_social_elements %}
-                            <a href="{{ element.src }}" target="_blank" class="social-btn {{ element.title|lower }}">
-                                <i class="fab fa-{{ element.title|lower }}"></i>
-                            </a>
-                        {% endfor %}
-                    {% else %}
-                        <a href="https://www.facebook.com/profile.php?id=100066894364180" target="_blank" class="social-btn facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="https://www.instagram.com/p/DGjfRSxtum4/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" class="social-btn instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="mailto:moubela276@gmail.com" class="social-btn google-plus">
-                            <i class="fa-brands fa-google"></i>
-                        </a>
-                    {% endif %}
-                </div>
+            <h2>
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'social_title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    Follow us on:
+                {% endif %}
+            </h2>
+            <div class="social-buttons">
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'social_link' %}
+                                <a href="{{ element.src }}" target="_blank" class="social-btn {{ element.title|lower }}" data-editable="link" data-element-id="{{ element.id }}" data-field="src">
+                                    <i class="fab fa-{{ element.title|lower }}"></i>
+                                </a>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    <a href="https://www.facebook.com/profile.php?id=100066894364180" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/p/DGjfRSxtum4/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" class="social-btn instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="mailto:moubela276@gmail.com" class="social-btn google-plus">
+                        <i class="fa-brands fa-google"></i>
+                    </a>
+                {% endif %}
             </div>
         </div>
 
         <div class="footer-item">
             <h2>
-                {% if footer_places_title_element %}
-                    {% editable_text footer_places_title_element 'title' %}
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'places_title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     Popular Places:
                 {% endif %}
             </h2>
             <ul>
-                {% if footer_places_elements %}
-                    {% for element in footer_places_elements %}
-                        <li><a href="{{ element.src }}">{% editable_text element 'title' %}</a></li>
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'popular_place' %}
+                                <li>{% editable_link element %}</li>
+                            {% endif %}
+                        {% endwith %}
                     {% endfor %}
                 {% else %}
                     <li><a href="#">Imlil – Hike the Atlas Mountains</a></li>
@@ -79,15 +109,25 @@
 
         <div class="subscribe-form footer-item">
             <h2>
-                {% if footer_newsletter_title_element %}
-                    {% editable_text footer_newsletter_title_element 'title' %}
+                {% if footer_elements %}
+                    {% for element in footer_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'newsletter_title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
                     Subscribe for Newsletter!
                 {% endif %}
             </h2>
             <form class="flex">
-                <input type="email" placeholder="Enter Email" class="form-control">
-                <input type="submit" class="btn" value="Subscribe">
+                {% if footer_newsletter_form_element %}
+                    {% editable_json footer_newsletter_form_element %}
+                {% else %}
+                    <input type="email" placeholder="Enter Email" class="form-control">
+                    <input type="submit" class="btn" value="Subscribe">
+                {% endif %}
             </form>
         </div>
     </div>

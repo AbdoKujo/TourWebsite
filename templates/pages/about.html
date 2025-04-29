@@ -26,7 +26,7 @@
                 <div class="tour-details">
                     <h2>{% editable_text element 'title' %}</h2>
                     <p>{% editable_text element 'description' %}</p>
-                    <a href="{% url 'theme_page' link_data.link|cut:'theme/' %}" class="read-more-btn">{{ link_data.link_text }}</a>
+                    <a href="{% url 'theme_page' link_data.link|cut:'theme/' %}" class="read-more-btn" data-editable="json" data-element-id="{{ element.id }}">{{ link_data.link_text }}</a>
                 </div>
             </div>
             {% endwith %}
@@ -83,20 +83,21 @@
                 {% for element in facts_elements %}
                     {% with parsed=element.json_content|json_parse %}
                         {% if not parsed.type %}
-                            {% for item in parsed.items %}
-                            <div class="facts-item" data-element-id="{{ element.id }}">
-                                <span class="{% editable_text element 'icon'  %} facts-icon"></span>
-                                <div class="facts-info">
-                                    <strong>{% editable_text element 'title' %}</strong>
-                                    <p class="text">{% editable_text element 'description' %}</p>
+                            <div data-editable="json" data-element-id="{{ element.id }}">
+                                {% for item in parsed.items %}
+                                <div class="facts-item">
+                                    <span class="{{ item.icon }} facts-icon"></span>
+                                    <div class="facts-info">
+                                        <strong>{{ item.title }}</strong>
+                                        <p class="text">{{ item.text }}</p>
+                                    </div>
                                 </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         {% endif %}
                     {% endwith %}
                 {% endfor %}
             {% else %}
-            <!-- Default facts items -->
             <div class="facts-item">
                 <span class="fas fa-map-marker-alt facts-icon"></span>
                 <div class="facts-info">
@@ -104,7 +105,30 @@
                     <p class="text">Destinations Covered</p>
                 </div>
             </div>
-            <!-- Other default items -->
+
+            <div class="facts-item">
+                <span class="fas fa-globe facts-icon"></span>
+                <div class="facts-info">
+                    <strong>1,000+</strong>
+                    <p class="text">Happy Travelers</p>
+                </div>
+            </div>
+
+            <div class="facts-item">
+                <span class="fas fa-car facts-icon"></span>
+                <div class="facts-info">
+                    <strong>300+</strong>
+                    <p class="text">Tours Organized</p>
+                </div>
+            </div>
+
+            <div class="facts-item">
+                <span class="fas fa-star facts-icon"></span>
+                <div class="facts-info">
+                    <strong>100%</strong>
+                    <p class="text">Customer Satisfaction</p>
+                </div>
+            </div>
             {% endif %}
         </div>
     </div>

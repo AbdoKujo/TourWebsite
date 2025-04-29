@@ -15,4 +15,5 @@ urlpatterns = [
     path('dashboard/section/<int:section_id>/', views.edit_section, name='edit_section'),
     path('dashboard/element/<int:element_id>/update/', views.update_element, name='update_element'),
     path('dashboard/element/<int:element_id>/upload-image/', views.upload_image, name='upload_image'),
+    path('dashboard/element/<int:element_id>/get/', views.get_element, name='get_element'),
 ]

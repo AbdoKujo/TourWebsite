@@ -26,6 +26,31 @@
     {% if edit_mode %}
     <!-- Edit Mode CSS -->
     <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+    <style>
+        /* Custom styles for theme page slider edit buttons */
+        .slider-item {
+            position: relative;
+        }
+        .slider-edit-buttons {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 100;
+            display: flex;
+            gap: 5px;
+        }
+        .slider-edit-button {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .slider-edit-button:hover {
+            background: rgba(0,0,0,0.9);
+        }
+    </style>
     {% endif %}
 </head>
 <body {% if edit_mode %}class="edit-mode"{% endif %}>
@@ -38,7 +63,7 @@
                 {% if gallery_elements %}
                     {% for element in gallery_elements %}
                         <div class="slider-item" id="item_{{ forloop.counter0 }}">
-                            {% editable_image element %}
+                            <img src="{{ element.src }}" alt="{{ element.title }}" />
                             <div class="slider-content">
                                 {% if forloop.first %}
                                     <h2 class="header-title-text">{% editable_text header_element 'title' %}</h2>
@@ -53,6 +78,12 @@
                                     <button class="slider-button" target="_blank">Book Now</button>
                                 </a>
                             </div>
+                            {% if edit_mode %}
+                            <div class="slider-edit-buttons">
+                                <button class="slider-edit-button" onclick="editSliderImage('{{ element.id }}')">Edit Image</button>
+                                <button class="slider-edit-button" onclick="editSliderTitle('{{ element.id }}')">Edit Title</button>
+                            </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 {% else %}
@@ -204,6 +235,138 @@
     {% if edit_mode %}
     <!-- Edit Mode JavaScript -->
     <script src="{% static 'admin/js/edit-mode.js' %}"></script>
+    <script>
+        // Functions for editing slider images and titles
+        function editSliderImage(elementId) {
+            // Create file input
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            
+            // Trigger file selection
+            fileInput.click();
+            
+            // File selection handler
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const formData = new FormData();
+                    formData.append("image", fileInput.files[0]);
+                    
+                    // Show loading indicator
+                    showNotification("Uploading image...");
+                    
+                    // Upload image to server
+                    fetch(`/dashboard/element/${elementId}/upload-image/`, {
+                        method: "POST",
+                        body: formData,
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            // Update image source
+                            const sliderItem = document.querySelector(`.slider-item[id*="${elementId}"]`) || 
+                                              document.querySelector(`.slider-item img[data-element-id="${elementId}"]`).closest('.slider-item');
+                            
+                            if (sliderItem) {
+                                const img = sliderItem.querySelector('img');
+                                if (img) {
+                                    img.src = data.src;
+                                    showNotification("Image updated successfully");
+                                    // Reload page after a short delay to ensure changes are applied
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1500);
+                                }
+                            }
+                        } else {
+                            showNotification("Error updating image", "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        showNotification("Error updating image", "error");
+                    });
+                }
+            });
+        }
+        
+        function editSliderTitle(elementId) {
+            // Find the slider item
+            const sliderItem = document.querySelector(`.slider-item[id*="${elementId}"]`) || 
+                              document.querySelector(`.slider-item img[data-element-id="${elementId}"]`).closest('.slider-item');
+            
+            if (!sliderItem) return;
+            
+            const titleElement = sliderItem.querySelector('.header-title-text');
+            if (!titleElement) return;
+            
+            const originalTitle = titleElement.innerText;
+            
+            // Create modal for title editing
+            const modal = document.createElement("div");
+            modal.classList.add("edit-modal");
+            
+            const modalContent = document.createElement("div");
+            modalContent.classList.add("edit-modal-content");
+            
+            const titleInput = document.createElement("input");
+            titleInput.type = "text";
+            titleInput.value = originalTitle;
+            titleInput.style.width = "100%";
+            titleInput.style.marginBottom = "20px";
+            
+            const saveBtn = document.createElement("button");
+            saveBtn.innerText = "Save";
+            saveBtn.classList.add("edit-save-btn");
+            
+            const cancelBtn = document.createElement("button");
+            cancelBtn.innerText = "Cancel";
+            cancelBtn.classList.add("edit-cancel-btn");
+            
+            modalContent.appendChild(titleInput);
+            modalContent.appendChild(saveBtn);
+            modalContent.appendChild(cancelBtn);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Save button click handler
+            saveBtn.addEventListener("click", () => {
+                const newTitle = titleInput.value;
+                
+                // Send update to server
+                const formData = new FormData();
+                formData.append("field", "title");
+                formData.append("value", newTitle);
+                
+                fetch(`/dashboard/element/${elementId}/update/`, {
+                    method: "POST",
+                    body: formData,
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        titleElement.innerText = newTitle;
+                        showNotification("Title updated successfully");
+                    } else {
+                        showNotification("Error updating title", "error");
+                    }
+                    
+                    // Remove modal
+                    document.body.removeChild(modal);
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    showNotification("Error updating title", "error");
+                    document.body.removeChild(modal);
+                });
+            });
+            
+            // Cancel button click handler
+            cancelBtn.addEventListener("click", () => {
+                document.body.removeChild(modal);
+            });
+        }
+    </script>
     {% endif %}
 </body>
 </html>
