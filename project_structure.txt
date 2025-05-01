@@ -9,7 +9,7 @@ website_cms/
 │
 ├── cms/                  # CMS app
 │   ├── __init__.py
-│   ├── models.py         # Database models
+│   ├── models.²py         # Database models
 │   ├── views.py          # Views for frontend and dashboard
 │   ├── urls.py           # URL patterns for the app
 │   ├── admin.py          # Admin configuration

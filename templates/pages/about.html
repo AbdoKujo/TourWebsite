@@ -18,7 +18,6 @@
 
 <!-- services section -->
 <section>
-    {% if about_elements %}
         {% for element in about_elements %}
             {% with link_data=element.json_content|json_parse %}
             <div class="tour-container">
@@ -31,18 +30,6 @@
             </div>
             {% endwith %}
         {% endfor %}
-    {% else %}
-        <!-- Default tour items if no elements in database -->
-        <div class="tour-container">
-            <img src="{% static 'images/Ouzoud8.jpg' %}" alt="Ouzoud">
-            <div class="tour-details">
-                <h2>Ouzoud</h2>
-                <p>Experience the breathtaking beauty of Ouzoud Waterfalls, where cascading waters and lush landscapes create the perfect escape into nature.</p>
-                <a href="{% url 'theme_page' 'ouzoud' %}" class="read-more-btn">Read More</a>
-            </div>
-        </div>
-        <!-- Add more default tour items as needed -->
-    {% endif %}
 </section>
 <!-- end of services section -->
 
@@ -51,7 +38,6 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if facts_elements %}
                     {% for element in facts_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'subtitle' %}
@@ -59,12 +45,8 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    DISCOVER SOME FACTS ABOUT OUR SERVICES
-                {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if facts_elements %}
                     {% for element in facts_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'title' %}
@@ -72,65 +54,27 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    FUN FACTS
-                {% endif %}
+
             </h2>
         </div>
 
-        <div class="facts-row">
-            {% if facts_elements %}
-                {% for element in facts_elements %}
-                    {% with parsed=element.json_content|json_parse %}
-                        {% if not parsed.type %}
-                            <div data-editable="json" data-element-id="{{ element.id }}">
-                                {% for item in parsed.items %}
-                                <div class="facts-item">
-                                    <span class="{{ item.icon }} facts-icon"></span>
-                                    <div class="facts-info">
-                                        <strong>{{ item.title }}</strong>
-                                        <p class="text">{{ item.text }}</p>
-                                    </div>
-                                </div>
-                                {% endfor %}
+        {% for element in facts_elements %}
+            {% with parsed=element.json_content|json_parse %}
+                {% if not parsed.type %}
+                    <div class="facts-row" data-editable="json" data-element-id="{{ element.id }}">
+                        {% for item in parsed.items %}
+                        <div class="facts-item">
+                            <span class="{{ item.icon }} facts-icon"></span>
+                            <div class="facts-info">
+                                <strong>{{ item.title }}</strong>
+                                <p class="text">{{ item.text }}</p>
                             </div>
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
-            {% else %}
-            <div class="facts-item">
-                <span class="fas fa-map-marker-alt facts-icon"></span>
-                <div class="facts-info">
-                    <strong>50+</strong>
-                    <p class="text">Destinations Covered</p>
-                </div>
-            </div>
-
-            <div class="facts-item">
-                <span class="fas fa-globe facts-icon"></span>
-                <div class="facts-info">
-                    <strong>1,000+</strong>
-                    <p class="text">Happy Travelers</p>
-                </div>
-            </div>
-
-            <div class="facts-item">
-                <span class="fas fa-car facts-icon"></span>
-                <div class="facts-info">
-                    <strong>300+</strong>
-                    <p class="text">Tours Organized</p>
-                </div>
-            </div>
-
-            <div class="facts-item">
-                <span class="fas fa-star facts-icon"></span>
-                <div class="facts-info">
-                    <strong>100%</strong>
-                    <p class="text">Customer Satisfaction</p>
-                </div>
-            </div>
-            {% endif %}
-        </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
     </div>
 </section>
 <!-- end of facts section -->

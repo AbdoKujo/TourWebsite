@@ -9,18 +9,10 @@
     <div class="container">
         <div class="header-title">
             <h1>
-                {% if header_elements %}
                     {% editable_text header_elements.0 'title' %}
-                {% else %}
-                    Leave Your Footprints
-                {% endif %}
             </h1>
             <p>
-                {% if header_elements %}
                     {% editable_text header_elements.0 'description' %}
-                {% else %}
-                    Discover the magic of Morocco, a land of breathtaking landscapes, rich culture, and unforgettable adventures. From the golden dunes of the Sahara to the vibrant souks of Marrakech, explore ancient medinas, majestic mountains, and stunning coastal towns. Experience the warmth of Moroccan hospitality, savor traditional cuisine, and embark on a journey full of history, adventure, and beauty.
-                {% endif %}
             </p>
         </div>
     </div>
@@ -30,11 +22,7 @@
 <div class="btn-container">
     <a href="{% url 'page_detail' 'about' %}" class="sunset-btn">
         <span>
-            {% if header_elements and header_elements|length > 1 %}
                 {% editable_text header_elements.1 'title' %}
-            {% else %}
-                let's see our services
-            {% endif %}
         </span>
     </a>
 </div>
@@ -44,7 +32,6 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if featured_elements %}
                     {% for element in featured_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'subtitle' %}
@@ -52,12 +39,8 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    know about some places before your travel
-                {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if featured_elements %}
                     {% for element in featured_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'title' %}
@@ -65,14 +48,10 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    featured places
-                {% endif %}
             </h2>
         </div>
 
         <div class="featured-row">
-            {% if featured_elements %}
                 {% for element in featured_elements %}
                     {% with parsed=element.json_content|json_parse %}
                         {% if not parsed.type %}
@@ -91,9 +70,6 @@
                         {% endif %}
                     {% endwith %}
                 {% endfor %}
-            {% else %}
-                <!-- Default content -->
-            {% endif %}
         </div>
     </div>
 </section>
@@ -130,13 +106,15 @@
         </div>
 
         <div class="services-row">
-            {% if services_elements %}
                 {% for element in services_elements %}
                     {% with parsed=element.json_content|json_parse %}
                         {% if not parsed.type %}
                             <div class="services-item">
-                                <span class="services-icon">
-                                    <i class="{{ element.json_content }}"></i>
+                                <span class="services-icon" {% if edit_mode %}data-editable="json" data-element-id="{{ element.id }}" data-field="json_content" class="icon-edit"{% endif %}>
+                                    <i class="{{ parsed.icone }}"></i>
+                                    {% if edit_mode %}
+                                    <small class="edit-hint">(Edit Icon)</small>
+                                    {% endif %}
                                 </span>
                                 <h3>{% editable_text element 'title' %}</h3>
                                 <p class="text">{% editable_text element 'description' %}</p>
@@ -144,17 +122,6 @@
                         {% endif %}
                     {% endwith %}
                 {% endfor %}
-            {% else %}
-                <!-- Default services items -->
-                <div class="services-item">
-                    <span class="services-icon">
-                        <i class="fas fa-hotel"></i>
-                    </span>
-                    <h3>Luxury Stay</h3>
-                    <p class="text">Relax in stylish desert lodges and enjoy breathtaking Agafay views.</p>
-                </div>
-                <!-- Add more default services items as needed -->
-            {% endif %}
         </div>
     </div>
 </section>
@@ -165,7 +132,6 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if testimonials_elements %}
                     {% for element in testimonials_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'subtitle' %}
@@ -173,12 +139,8 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    what our clients say about us
-                {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if testimonials_elements %}
                     {% for element in testimonials_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'title' %}
@@ -186,46 +148,35 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    testimonials
-                {% endif %}
             </h2>
         </div>
 
         <div class="test-row">
-            {% if testimonials_elements %}
-                {% for element in testimonials_elements %}
-                    {% with parsed=element.json_content|json_parse %}
-                        {% if not parsed.type %}
-                            <div class="test-item">
-                                <p class="text">{% editable_text element 'description' %}</p>
-                                <div class="test-item-info">
-                                    {% editable_image element %}
-                                    <div>
-                                        <h3>{% editable_text element 'title' %}</h3>
-                                        <p class="text">
+            {% for element in testimonials_elements %}
+                {% with parsed=element.json_content|json_parse %}
+                    {% if not parsed.type %}
+                        <div class="test-item">
+                            <p class="text">{% editable_text element 'description' %}</p>
+                            <div class="test-item-info">
+                                {% editable_image element %}
+                                <div>
+                                    <h3>{% editable_text element 'title' %}</h3>
+                                    <p class="text">
+                                        {% if edit_mode %}
+                                            <span data-editable="json" data-element-id="{{ element.id }}" data-field="json_content" class="trip-edit">
+                                                {{ parsed.trip|default:"Trip to Marrakech" }}
+                                                <small class="edit-hint">(click to edit trip)</small>
+                                            </span>
+                                        {% else %}
                                             {{ parsed.trip|default:"Trip to Marrakech" }}
-                                        </p>
-                                    </div>
+                                        {% endif %}
+                                    </p>
                                 </div>
                             </div>
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
-            {% else %}
-                <!-- Default testimonial items -->
-                <div class="test-item">
-                    <p class="text">An unforgettable experience! The views, the hospitality, and the adventure made our trip magical.</p>
-                    <div class="test-item-info">
-                        <img src="{% static 'images/test-1.jpg' %}" alt="testimonial">
-                        <div>
-                            <h3>Kevin Wilson</h3>
-                            <p class="text">Trip to Marrakech</p>
                         </div>
-                    </div>
-                </div>
-                <!-- Add more default testimonial items as needed -->
-            {% endif %}
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
         </div>
     </div>
 </section>
@@ -233,14 +184,12 @@
 
 <!-- video section -->
 <section id="video">
+    {% if edit_mode %}
+    <div>
+    {% else %}
     <div class="video-wrapper flex">
-        {% if video_elements %}
+    {% endif %}
             {% editable_video video_elements.0 %}
-        {% else %}
-            <video loop>
-                <source src="{% static 'videos/video-section.mp4' %}" type="video/mp4">
-            </video>
-        {% endif %}
         <button type="button" id="play-btn">
             <i class="fas fa-play"></i>
         </button>

@@ -317,3 +317,25 @@ body.edit-mode {
 .fade-out {
   opacity: 0;
 }
+
+.trip-edit {
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.trip-edit:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.trip-edit .edit-hint {
+  display: none;
+  color: #666;
+  font-style: italic;
+  margin-left: 5px;
+}
+
+.trip-edit:hover .edit-hint {
+  display: inline;
+}

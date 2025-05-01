@@ -20,7 +20,6 @@
 <div id="gallery" class="py-4">
     <div class="container">
         <div class="gallery-row">
-            {% if gallery_elements %}
                 {% for element in gallery_elements %}
                 <div class="gallery-item shadow">
                     {% editable_image element %}
@@ -29,16 +28,6 @@
                     </span>
                 </div>
                 {% endfor %}
-            {% else %}
-                <!-- Fallback gallery items if no elements in database -->
-                <div class="gallery-item shadow">
-                    <img src="{% static 'images/gallery-1.jpg' %}" alt="gallery img">
-                    <span class="zoom-icon">
-                        <i class="fas fa-search-plus"></i>
-                    </span>
-                </div>
-                <!-- Add more fallback items as needed -->
-            {% endif %}
         </div>
     </div>
 </div>
