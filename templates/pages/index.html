@@ -32,15 +32,16 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                    {% for element in featured_elements %}
-                        {% with parsed=element.json_content|json_parse %}
-                            {% if parsed.type == 'subtitle' %}
-                                {% editable_text element 'title' %}
-                            {% endif %}
-                        {% endwith %}
-                    {% endfor %}
+                {% for element in featured_elements %}
+                    {% with parsed=element.json_content|json_parse %}
+                        {% if parsed.type == 'subtitle' %}
+                            {% editable_text element 'title' %}
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
             </span>
-            <h2 class="lg-title">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="lg-title">
                     {% for element in featured_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'title' %}
@@ -48,28 +49,35 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-            </h2>
+                </h2>
+                {% if edit_mode %}
+                <div class="edit-buttons">
+                    <button type="button" class="btn btn-sm btn-primary" id="editTextBtn" onclick="toggleEditMode('text')">Edit Text</button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="editImagesBtn" onclick="toggleEditMode('images')">Edit Images</button>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="featured-row">
-                {% for element in featured_elements %}
-                    {% with parsed=element.json_content|json_parse %}
-                        {% if not parsed.type %}
-                            <div class="featured-item my-2 shadow">
-                                {% editable_image element %}
-                                <div class="featured-item-content">
-                                    <span>
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {% editable_text element 'title' %}
-                                    </span>
-                                    <div>
-                                        <p class="text">{% editable_text element 'description' %}</p>
-                                    </div>
+        <div class="featured-row" id="featuredItems">
+            {% for element in featured_elements %}
+                {% with parsed=element.json_content|json_parse %}
+                    {% if not parsed.type %}
+                        <div class="featured-item my-2 shadow">
+                            {% editable_image element %}
+                            <div class="featured-item-content">
+                                <span>
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    {% editable_text element 'title' %}
+                                </span>
+                                <div>
+                                    <p class="text">{% editable_text element 'description' %}</p>
                                 </div>
                             </div>
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
         </div>
     </div>
 </section>
@@ -209,5 +217,45 @@
             video.pause();
         }
     });
+    
+    // Toggle between text and image edit modes
+    function toggleEditMode(mode) {
+        const featuredItems = document.querySelectorAll('#featuredItems > div');
+        const textBtn = document.getElementById('editTextBtn');
+        const imagesBtn = document.getElementById('editImagesBtn');
+        
+        if (mode === 'images') {
+            // Image edit mode - remove styling that might interfere with image editor
+            featuredItems.forEach(item => {
+                item.classList.remove('featured-item', 'shadow');
+                item.style.overflow = 'visible';
+                item.style.position = 'relative';
+                item.style.marginBottom = '30px';
+            });
+            
+            // Update button styles
+            textBtn.classList.replace('btn-primary', 'btn-secondary');
+            imagesBtn.classList.replace('btn-secondary', 'btn-primary');
+        } else {
+            // Text edit mode - restore normal styling
+            featuredItems.forEach(item => {
+                item.classList.add('featured-item', 'shadow', 'my-2');
+                item.style.overflow = '';
+                item.style.position = '';
+                item.style.marginBottom = '';
+            });
+            
+            // Update button styles
+            textBtn.classList.replace('btn-secondary', 'btn-primary');
+            imagesBtn.classList.replace('btn-primary', 'btn-secondary');
+        }
+    }
+    
+    // Initialize in text edit mode by default
+    {% if edit_mode %}
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleEditMode('text');
+    });
+    {% endif %}
 </script>
 {% endblock %}

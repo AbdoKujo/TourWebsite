@@ -33,7 +33,6 @@
     <div class="container">
         <div class="title-wrap">
             <span class="sm-title">
-                {% if contact_elements %}
                     {% for element in contact_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'subtitle' %}
@@ -41,12 +40,8 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    get in touch with us
-                {% endif %}
             </span>
             <h2 class="lg-title">
-                {% if contact_elements %}
                     {% for element in contact_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.type == 'title' %}
@@ -54,15 +49,11 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    contact us
-                {% endif %}
             </h2>
         </div>
 
         <div class="contact-row">
             <div class="contact-left">
-                {% if contact_elements %}
                     {% for element in contact_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if not parsed.type %}
@@ -70,60 +61,64 @@
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                <form class="contact-form">
-                    <input type="text" class="form-control" placeholder="Your name">
-                    <input type="email" class="form-control" placeholder="Your email">
-                    <textarea rows="4" class="form-control" placeholder="Your message" style="resize: none;"></textarea>
-                    <button type="submit" class="btn">Send Message</button>
-                </form>
-                {% endif %}
             </div>
             <div class="contact-right my-2">
                 {% if contact_elements %}
-                    {% with contact_data=contact_elements.2.json_content|json_parse %}
-                        {% if contact_data.contact_info %}
-                            {% for info in contact_data.contact_info %}
-                                <div class="contact-item">
-                                    <span class="contact-icon">
-                                        <i class="{{ info.icon }}"></i>
-                                    </span>
-                                    <div>
-                                        <span>{% editable_text contact_elements.2 'title' %}</span>
-                                        <p>{% editable_text contact_elements.2 'description' %}</p>
-                                    </div>
+                    {% for element in contact_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.contact_info %}
+                                <div {% if edit_mode %}data-editable="json" data-element-id="{{ element.id }}" data-field="json_content"{% endif %}>
+                                    {% for info in parsed.contact_info %}
+                                        <div class="contact-item">
+                                            <span class="contact-icon">
+                                                <i class="{{ info.icon }}"></i>
+                                            </span>
+                                            <div>
+                                                <span>{{ info.title }}</span>
+                                                {% if info.link %}
+                                                    <p><a href="{{ info.link }}" target="_blank">{{ info.content }}</a></p>
+                                                {% else %}
+                                                    <p>{{ info.content }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    {% if edit_mode %}
+                                    <small class="edit-hint">(Click to edit contact information)</small>
+                                    {% endif %}
                                 </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
                 {% else %}
-                <div class="contact-item">
-                    <span class="contact-icon">
-                        <i class="fas fa-phone-alt"></i>
-                    </span>
-                    <div>
-                        <span>Phone</span>
-                        <p>+212 643-562-320</p>
+                    <!-- Default contact items -->
+                    <div class="contact-item">
+                        <span class="contact-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </span>
+                        <div>
+                            <span>Phone</span>
+                            <p>+212 643-562-320</p>
+                        </div>
                     </div>
-                </div>
-                <div class="contact-item">
-                    <span class="contact-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </span>
-                    <div>
-                        <span>Address</span>
-                        <p>Marrakech, Morocco</p>
+                    <div class="contact-item">
+                        <span class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </span>
+                        <div>
+                            <span>Address</span>
+                            <p><a href="https://maps.app.goo.gl/fdoKHvVYEAToYJk98" target="_blank">Rue Mohammed V, 2ème étage, n°10, Immeuble royal Air Maroc guilez</a></p>
+                        </div>
                     </div>
-                </div>
-                <div class="contact-item">
-                    <span class="contact-icon">
-                        <i class="fas fa-envelope"></i>
-                    </span>
-                    <div>
-                        <span>Email</span>
-                        <p>moubela276@gmail.com</p>
+                    <div class="contact-item">
+                        <span class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <div>
+                            <span>Email</span>
+                            <p>moubela276@gmail.com</p>
+                        </div>
                     </div>
-                </div>
                 {% endif %}
             </div>
         </div>
