@@ -10,18 +10,10 @@
     <div class="container">
         <div class="header-title">
             <h1>
-                {% if header_elements %}
                     {% editable_text header_elements.0 'title' %}
-                {% else %}
-                    Contact Us
-                {% endif %}
             </h1>
             <p>
-                {% if header_elements %}
                     {% editable_text header_elements.0 'description' %}
-                {% else %}
-                    Get in touch with us for any questions or inquiries about our services.
-                {% endif %}
             </p>
         </div>
     </div>
@@ -63,7 +55,6 @@
                     {% endfor %}
             </div>
             <div class="contact-right my-2">
-                {% if contact_elements %}
                     {% for element in contact_elements %}
                         {% with parsed=element.json_content|json_parse %}
                             {% if parsed.contact_info %}
@@ -83,43 +74,10 @@
                                             </div>
                                         </div>
                                     {% endfor %}
-                                    {% if edit_mode %}
-                                    <small class="edit-hint">(Click to edit contact information)</small>
-                                    {% endif %}
                                 </div>
                             {% endif %}
                         {% endwith %}
                     {% endfor %}
-                {% else %}
-                    <!-- Default contact items -->
-                    <div class="contact-item">
-                        <span class="contact-icon">
-                            <i class="fas fa-phone-alt"></i>
-                        </span>
-                        <div>
-                            <span>Phone</span>
-                            <p>+212 643-562-320</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </span>
-                        <div>
-                            <span>Address</span>
-                            <p><a href="https://maps.app.goo.gl/fdoKHvVYEAToYJk98" target="_blank">Rue Mohammed V, 2ème étage, n°10, Immeuble royal Air Maroc guilez</a></p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <span class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <div>
-                            <span>Email</span>
-                            <p>moubela276@gmail.com</p>
-                        </div>
-                    </div>
-                {% endif %}
             </div>
         </div>
     </div>

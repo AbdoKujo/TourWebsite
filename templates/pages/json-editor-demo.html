@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Editor Demo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/static/admin/css/json-editor.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-title {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .demo-section {
+      margin-bottom: 30px;
+    }
+    
+    .demo-section h2 {
+      border-bottom: 1px solid #eaeaea;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-button {
+      background-color: #1ec6b6;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    
+    .demo-button:hover {
+      background-color: #19a89a;
+    }
+  </style>
+</head>
+<body class="edit-mode">
+  <div class="demo-container">
+    <div class="demo-title">
+      <h1>Modern JSON Editor Demo</h1>
+      <p>This page demonstrates the new user-friendly JSON editor for the CMS.</p>
+    </div>
+    
+    <div class="demo-section">
+      <h2>Editor Types</h2>
+      <p>Click the buttons below to see different editor types:</p>
+      
+      <button class="demo-button" id="demo-form">Form Editor</button>
+      <button class="demo-button" id="demo-facts">Facts Editor</button>
+      <button class="demo-button" id="demo-contact">Contact Editor</button>
+      <button class="demo-button" id="demo-icon">Icon Editor</button>
+      <button class="demo-button" id="demo-highlights">Highlights Editor</button>
+    </div>
+    
+    <div class="demo-section">
+      <h2>How to Use</h2>
+      <p>To use the JSON editor in your CMS:</p>
+      <ol>
+        <li>Enter edit mode by clicking the edit button in the bottom right corner</li>
+        <li>Click on any editable JSON content on the page</li>
+        <li>Use the visual editor to make changes easily</li>
+        <li>For advanced editing, switch to the Raw JSON tab</li>
+        <li>Click Save Changes when done</li>
+      </ol>
+    </div>
+    
+    <div class="demo-section">
+      <h2>Features</h2>
+      <ul>
+        <li>User-friendly visual editors for different content types</li>
+        <li>Raw JSON editing with validation</li>
+        <li>Icon picker with search functionality</li>
+        <li>Responsive design that works on mobile devices</li>
+        <li>Drag and drop reordering of items (coming soon)</li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Hidden elements for demo purposes -->
+  <div style="display: none;" data-editable="json" data-element-id="form-demo"></div>
+  <div style="display: none;" data-editable="json" data-element-id="facts-demo"></div>
+  <div style="display: none;" data-editable="json" data-element-id="contact-demo"></div>
+  <div style="display: none;" data-editable="json" data-element-id="icon-demo"></div>
+  <div style="display: none;" data-editable="json" data-element-id="highlights-demo"></div>
+  
+  <script src="/static/admin/js/json-editor.js"></script>
+  <script>
+    // Demo data
+    const demoData = {
+      form: {
+        form: {
+          submit_text: "Submit",
+          whatsapp_number: "212643562320",
+          fields: [
+            {
+              name: "name",
+              type: "text",
+              label: "Your Name",
+              required: true,
+              options: []
+            },
+            {
+              name: "email",
+              type: "email",
+              label: "Email Address",
+              required: true,
+              options: []
+            },
+            {
+              name: "phone",
+              type: "tel",
+              label: "Phone Number",
+              required: false,
+              options: []
+            },
+            {
+              name: "message",
+              type: "textarea",
+              label: "Your Message",
+              required: false,
+              options: []
+            }
+          ]
+        }
+      },
+      facts: {
+        items: [
+          {
+            icon: "fas fa-map-marker-alt",
+            title: "50+",
+            text: "Destinations Covered"
+          },
+          {
+            icon: "fas fa-globe",
+            title: "1,000+",
+            text: "Happy Travelers"
+          },
+          {
+            icon: "fas fa-car",
+            title: "300+",
+            text: "Tours Organized"
+          },
+          {
+            icon: "fas fa-star",
+            title: "100%",
+            text: "Customer Satisfaction"
+          }
+        ]
+      },
+      contact: {
+        contact_info: [
+          {
+            icon: "fas fa-map-marker-alt",
+            title: "Address",
+            content: "123 Travel Street, Marrakech, Morocco",
+            link: ""
+          },
+          {
+            icon: "fas fa-phone-alt",
+            title: "Phone",
+            content: "+212 643-562-320",
+            link: "tel:+212643562320"
+          },
+          {
+            icon: "fas fa-envelope",
+            title: "Email",
+            content: "info@moroccotravel.com",
+            link: "mailto:info@moroccotravel.com"
+          }
+        ]
+      },
+      icon: {
+        icone: "fas fa-map-marked-alt"
+      },
+      highlights: {
+        highlights: [
+          "Discover the charm of this destination.",
+          "Explore the cultural and spiritual heart of Morocco.",
+          "Enjoy excursions through breathtaking landscapes.",
+          "Experience local traditions and visit historical landmarks.",
+          "Cultural Immersion: Shop in lively souks and visit museums."
+        ]
+      }
+    };
+    
+    // Mock server responses
+    function mockServerResponse(elementId) {
+      let jsonContent = '{}';
+      
+      if (elementId === 'form-demo') {
+        jsonContent = JSON.stringify(demoData.form);
+      } else if (elementId === 'facts-demo') {
+        jsonContent = JSON.stringify(demoData.facts);
+      } else if (elementId === 'contact-demo') {
+        jsonContent = JSON.stringify(demoData.contact);
+      } else if (elementId === 'icon-demo') {
+        jsonContent = JSON.stringify(demoData.icon);
+      } else if (elementId === 'highlights-demo') {
+        jsonContent = JSON.stringify(demoData.highlights);
+      }
+      
+      return {
+        json_content: jsonContent
+      };
+    }
+    
+    // Mock fetch for demo
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+      if (url.includes('/dashboard/element/') && url.includes('/get/')) {
+        const elementId = url.split('/')[3];
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockServerResponse(elementId))
+        });
+      } else if (url.includes('/dashboard/element/') && url.includes('/update/')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true })
+        });
+      }
+      
+      return originalFetch(url, options);
+    };
+    
+    // Show notification function for demo
+    window.showNotification = function(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `json-editor-notification ${type === 'error' ? 'json-editor-notification-error' : 'json-editor-notification-success'}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('json-editor-notification-fade-out');
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 500);
+      }, 3000);
+    };
+    
+    // Demo buttons
+    document.getElementById('demo-form').addEventListener('click', () => {
+      document.querySelector('[data-element-id="form-demo"]').click();
+    });
+    
+    document.getElementById('demo-facts').addEventListener('click', () => {
+      document.querySelector('[data-element-id="facts-demo"]').click();
+    });
+    
+    document.getElementById('demo-contact').addEventListener('click', () => {
+      document.querySelector('[data-element-id="contact-demo"]').click();
+    });
+    
+    document.getElementById('demo-icon').addEventListener('click', () => {
+      document.querySelector('[data-element-id="icon-demo"]').click();
+    });
+    
+    document.getElementById('demo-highlights').addEventListener('click', () => {
+      document.querySelector('[data-element-id="highlights-demo"]').click();
+    });
+  </script>
+</body>
+</html>

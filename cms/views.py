@@ -10,6 +10,26 @@ from django.conf import settings
 from .models import Page, Section, Element, EditHistory
 from .forms import ElementForm
 
+# Add this function to your views.py file to get footer elements for all pages
+def get_footer_elements():
+    """Get footer elements to be used across all pages"""
+    try:
+        # Try to get the footer section from the home page first
+        home_page = Page.objects.get(slug='index')
+        footer_section = home_page.sections.filter(name='footer').first()
+        if footer_section:
+            return footer_section.elements.all()
+    except (Page.DoesNotExist, AttributeError):
+        pass
+    
+    # If not found, try to find any footer section
+    footer_section = Section.objects.filter(name='footer').first()
+    if footer_section:
+        return footer_section.elements.all()
+    
+    # Return empty queryset if no footer elements found
+    return Element.objects.none()
+
 # Frontend views
 def home(request):
     page = get_object_or_404(Page, slug='index')
@@ -28,6 +48,9 @@ def home(request):
             context[f'{section.name}_elements'] = elements
             if len(elements) == 1:
                 context[f'{section.name}_element'] = elements[0]
+    
+    # Add footer elements to context
+    context['footer_elements'] = get_footer_elements()
     
     return render(request, 'pages/index.html', context)
 
@@ -55,6 +78,9 @@ def page_detail(request, slug):
             if len(elements) == 1:
                 context[f'{section.name}_element'] = elements[0]
     
+    # Add footer elements to context
+    context['footer_elements'] = get_footer_elements()
+    
     return render(request, template_name, context)
 
 def theme_page(request, slug):
@@ -75,6 +101,9 @@ def theme_page(request, slug):
             context[f'{section.name}_elements'] = elements
             if len(elements) == 1:
                 context[f'{section.name}_element'] = elements[0]
+    
+    # Add footer elements to context
+    context['footer_elements'] = get_footer_elements()
     
     return render(request, 'pages/theme_page.html', context)
 

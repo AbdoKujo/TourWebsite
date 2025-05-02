@@ -13,7 +13,7 @@
                         {% endwith %}
                     {% endfor %}
                 {% else %}
-                    Marrakech<span>Activities</span>Portal
+                    Marrakech<span>Activities<span>Portal</span>
                 {% endif %}
             </a>
             <p class="text">
@@ -32,41 +32,43 @@
         </div>
 
         <div class="footer-item">
-            <h2>
-                {% if footer_elements %}
-                    {% for element in footer_elements %}
-                        {% with parsed=element.json_content|json_parse %}
-                            {% if parsed.type == 'social_title' %}
-                                {% editable_text element 'title' %}
-                            {% endif %}
-                        {% endwith %}
-                    {% endfor %}
-                {% else %}
-                    Follow us on:
-                {% endif %}
-            </h2>
-            <div class="social-buttons">
-                {% if footer_elements %}
-                    {% for element in footer_elements %}
-                        {% with parsed=element.json_content|json_parse %}
-                            {% if parsed.type == 'social_link' %}
-                                <a href="{{ element.src }}" target="_blank" class="social-btn {{ element.title|lower }}" data-editable="link" data-element-id="{{ element.id }}" data-field="src">
-                                    <i class="fab fa-{{ element.title|lower }}"></i>
-                                </a>
-                            {% endif %}
-                        {% endwith %}
-                    {% endfor %}
-                {% else %}
-                    <a href="https://www.facebook.com/profile.php?id=100066894364180" target="_blank" class="social-btn facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="https://www.instagram.com/p/DGjfRSxtum4/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" class="social-btn instagram">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="mailto:moubela276@gmail.com" class="social-btn google-plus">
-                        <i class="fa-brands fa-google"></i>
-                    </a>
-                {% endif %}
+            <div class="footer-item">
+                <h2>
+                    {% if footer_elements %}
+                        {% for element in footer_elements %}
+                            {% with parsed=element.json_content|json_parse %}
+                                {% if parsed.type == 'social_title' %}
+                                    {% editable_text element 'title' %}
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        Follow us on:
+                    {% endif %}
+                </h2>
+                <div class="social-buttons">
+                    {% if footer_elements %}
+                        {% for element in footer_elements %}
+                            {% with parsed=element.json_content|json_parse %}
+                                {% if parsed.type == 'social_link' %}
+                                    <a href="{{ element.src }}" target="_blank" class="social-btn {{ element.title|lower }}" data-editable="link" data-element-id="{{ element.id }}" data-field="src">
+                                        <i class="fab fa-{{ element.title|lower }}"></i>
+                                    </a>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <a href="https://www.facebook.com/profile.php?id=100066894364180" target="_blank" class="social-btn facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.instagram.com/p/DGjfRSxtum4/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" class="social-btn instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="mailto:moubela276@gmail.com" class="social-btn google-plus">
+                            <i class="fa-brands fa-google"></i>
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
 

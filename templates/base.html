@@ -25,6 +25,8 @@
     {% if edit_mode %}
     <!-- Edit Mode CSS -->
     <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/json-editor.css' %}">
+
     {% endif %}
     
     {% block extra_css %}{% endblock %}
@@ -41,7 +43,7 @@
     
     {% if edit_mode %}
     <!-- Edit Mode JavaScript -->
-    <script src="{% static 'admin/js/edit-mode.js' %}"></script>
+    <script src="{% static 'admin/js/edit-mode.js' %}?v={{ random_number }}"></script>
     {% endif %}
     
     {% block extra_js %}{% endblock %}

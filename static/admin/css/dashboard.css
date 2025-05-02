@@ -340,3 +340,66 @@ body.edit-mode {
   display: inline;
 }
 
+/* User-friendly JSON editor styles */
+.json-editor-form {
+  width: 100%;
+}
+
+.json-editor-form .form-group {
+  margin-bottom: 15px;
+}
+
+.json-editor-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.json-editor-form input,
+.json-editor-form textarea,
+.json-editor-form select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.json-editor-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.json-edit-btn {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.services-item:hover .json-edit-btn,
+.facts-row:hover .json-edit-btn,
+.booking-form:hover .json-edit-btn,
+.contact-right:hover .json-edit-btn,
+.test-item:hover .json-edit-btn {
+  opacity: 1;
+}
+
+/* Form field editor styles */
+.form-fields-section,
+.facts-items-section,
+.contact-items-section {
+  margin-bottom: 20px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.text-muted {
+  color: #6c757d;
+  font-size: 12px;
+}

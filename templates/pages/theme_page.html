@@ -27,59 +27,94 @@
     <!-- Edit Mode CSS -->
     <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
     <style>
-        /* Custom styles for theme page editing */
+        /* Additional styles for the theme page edit mode */
         .slider-edit-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: rgba(30, 198, 182, 0.1);
-            border-radius: 5px;
-        }
-        
-        .slider-edit-btn {
-            padding: 8px 15px;
-            background-color: #1ec6b6;
-            color: white;
-            border: none;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .slider-edit-controls h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .edit-item {
             display: flex;
             align-items: center;
-            gap: 5px;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background-color: white;
         }
         
-        .slider-edit-btn:hover {
-            background-color: #19a89a;
+        .edit-item:hover {
+            background-color: #f0f0f0;
         }
         
-        .slider-edit-btn i {
-            font-size: 16px;
+        .edit-item img {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            margin-right: 10px;
         }
         
-        .booking-form-edit-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #1ec6b6;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
+        .edit-item-buttons {
+            margin-left: auto;
+        }
+        
+        .edit-item-buttons button {
+            margin-left: 5px;
         }
     </style>
     {% endif %}
 </head>
 <body {% if edit_mode %}class="edit-mode"{% endif %}>
     {% include 'includes/navbar.html' %}
+    
+    {% if edit_mode %}
+    <!-- Slider Edit Controls - Only visible in edit mode -->
+    <div class="container slider-edit-controls">
+        <h4>Edit Slider Images and Content</h4>
+        {% if gallery_elements %}
+            {% for element in gallery_elements %}
+                <div class="edit-item">
+                    <img src="{{ element.src }}" alt="Slide {{ forloop.counter }}">
+                    <div>
+                        <strong>Slide {{ forloop.counter }}</strong>
+                    </div>
+                    <div class="edit-item-buttons">
+                        <button type="button" class="dashboard-btn" 
+                                onclick="editElement('image', {{ element.id }})">
+                            Edit Image
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Header content edit -->
+        <div class="edit-item">
+            <div>
+                <strong>Slider Title and Description</strong>
+            </div>
+            <div class="edit-item-buttons">
+                <button type="button" class="dashboard-btn" 
+                        onclick="editElement('text', {{ header_element.id }}, 'title')">
+                    Edit Title
+                </button>
+                <button type="button" class="dashboard-btn" 
+                        onclick="editElement('text', {{ header_element.id }}, 'description')">
+                    Edit Description
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
     <!-- header with slider -->
     <header class="flex header-sm">
@@ -88,12 +123,16 @@
                 {% if gallery_elements %}
                     {% for element in gallery_elements %}
                         <div class="slider-item" id="item_{{ forloop.counter0 }}">
-                            <img src="{{ element.src }}" alt="{{ element.title }}" class="slider-image" data-element-id="{{ element.id }}">
+                            {% if edit_mode %}
+                            <img src="{{ element.src }}" alt="{{ element.title|default:'' }}" class="{{ css_class }}">
+                            {% else %}
+                            {% editable_image element %}
+                            {% endif %}
                             <div class="slider-content">
                                 {% if forloop.first %}
                                     <h2 class="header-title-text">{{ header_element.title }}</h2>
                                     <div class="slider-content1">
-                                        {{ header_element.description }}
+                                        {{ header_element.description|safe }}
                                     </div>
                                 {% else %}
                                     <h2 class="header-title-text">{{ header_element.title }}</h2>
@@ -110,9 +149,9 @@
                     <div class="slider-item" id="item_0">
                         <img src="{% static 'images/default.jpg' %}" alt="" />
                         <div class="slider-content">
-                            <h2 class="header-title-text">{% editable_text header_element 'title' %}</h2>
+                            <h2 class="header-title-text">{{ header_element.title }}</h2>
                             <div class="slider-content1">
-                                {% editable_text header_element 'description' %}
+                                {{ header_element.description|safe }}
                             </div>
                             <a href="https://wa.me/212643562320?text=Hello,%20I%20want%20to%20book%20a%20trip%20to%20{{ page.name|lower }}">
                                 <button class="slider-button" target="_blank">Book Now</button>
@@ -124,21 +163,6 @@
             <button id="slider-prev" class="slider-prev"><i class="fa-solid fa-angle-left"></i></button>
             <button id="slider-next" class="slider-next"><i class="fa-solid fa-angle-right"></i></button>
         </div>
-        
-        {% if edit_mode and gallery_elements %}
-        <!-- External edit controls for slider -->
-        <div class="slider-edit-controls">
-            <button type="button" class="slider-edit-btn" id="edit-current-image">
-                <i class="fas fa-image"></i> Edit Current Image
-            </button>
-            <button type="button" class="slider-edit-btn" id="edit-current-title">
-                <i class="fas fa-heading"></i> Edit Title
-            </button>
-            <button type="button" class="slider-edit-btn" id="edit-current-description">
-                <i class="fas fa-align-left"></i> Edit Description
-            </button>
-        </div>
-        {% endif %}
     </header>
     <!-- end of header -->
 
@@ -151,115 +175,32 @@
             </div>
             <div class="trip-details">
                 <div class="trip-info">
-                    {% if about_trip_elements %}
                         <h2>{% editable_text about_trip_elements.0 'title' %}</h2>
                         <p>{% editable_text about_trip_elements.0 'description' %}</p>
                         <p></p>
                         
                         <div class="trip-highlights">
-                            <h3>Trip Highlights</h3>
+                            <h3>{% with highlight_data=about_trip_elements.0.json_content|json_parse %}{{ highlight_data.title }}{% endwith %}</h3>
                             {% editable_highlights about_trip_elements.0 %}
+                            <p>{% with highlight_data=about_trip_elements.0.json_content|json_parse %}{{ highlight_data.description }}{% endwith %}</p>
                         </div>
                         
-                        <p>This adventure offers a perfect blend of history, nature, and culture, making it an unforgettable journey through Morocco's most iconic destinations.</p>
-                    {% else %}
-                        <h2>About This Trip</h2>
-                        <p>{% editable_text description_elements.0 'description' %}</p>
-                        <p></p>
-                        
-                        <div class="trip-highlights">
-                            <h3>Trip Highlights</h3>
-                            <ul class="highlights-list">
-                                <li>{{ page.name }}: Discover the charm of this destination.</li>
-                                <li>Explore the cultural and spiritual heart of Morocco.</li>
-                                <li>Enjoy excursions through breathtaking landscapes.</li>
-                                <li>Experience local traditions and visit historical landmarks.</li>
-                                <li>Cultural Immersion: Shop in lively souks and visit museums.</li>
-                            </ul>
-                        </div>
-                        
-                        <p>This adventure offers a perfect blend of history, nature, and culture, making it an unforgettable journey through Morocco's most iconic destinations.</p>
-                    {% endif %}
                     
-                    {% if booking_elements %}
-                        {% with booking_data=booking_elements.0.json_content|json_parse %}
-                            {% if booking_data.price %}
-                                <h4>Price</h4>
-                                <p>{{ booking_data.price }}</p>
+                    {% if about_trip_elements %}
+                        {% with highlight_data=about_trip_elements.0.json_content|json_parse %}
+                            {% if highlight_data.price %}
+                                <div {% if edit_mode %}data-editable="json" data-element-id="{{ about_trip_elements.0.id }}"{% endif %}>
+                                    <h4>Price</h4>
+                                    <p>{{ highlight_data.price }}</p>
+                                </div>
                             {% endif %}
                         {% endwith %}
                     {% endif %}
                 </div>
                 
-                <div class="booking-form" style="position: relative;">
-                    {% if edit_mode and booking_elements %}
-                    <button type="button" class="booking-form-edit-btn" id="edit-booking-form">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    {% endif %}
-                    
-                    {% if booking_elements %}
+                <div class="booking-form">
                         <h3>{% editable_text booking_elements.0 'title' %}</h3>
                         {% editable_form booking_elements.0 %}
-                    {% else %}
-                        <h3>Book This Trip</h3>
-                        <form id="booking-form">
-                            <div class="form-group">
-                                <label for="name">Full Name</label>
-                                <input type="text" id="name" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="date">Trip Date</label>
-                                <input type="date" id="date" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="guests">Number of Guests</label>
-                                <select id="guests" class="form-control" required>
-                                    <option value="">Select</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5+</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="message">Special Requests</label>
-                                <textarea id="message" class="form-control" rows="3"></textarea>
-                            </div>
-                            <button type="button" id="whatsapp-book" class="btn-book" onclick="sendWhatsApp()">Book Now</button>
-                        </form>
-                        
-                        <script>
-                        function sendWhatsApp() {
-                            let name = document.getElementById("name").value;
-                            let email = document.getElementById("email").value;
-                            let phone = document.getElementById("phone").value;
-                            let date = document.getElementById("date").value;
-                            let guests = document.getElementById("guests").value;
-                            let message = document.getElementById("message").value;
-                            
-                            let phoneNumber = "212643562320";
-                            let whatsappText = "Name: " + encodeURIComponent(name) + "%0A";
-                            whatsappText += "Email: " + encodeURIComponent(email) + "%0A";
-                            whatsappText += "Phone: " + encodeURIComponent(phone) + "%0A";
-                            whatsappText += "Date: " + encodeURIComponent(date) + "%0A";
-                            whatsappText += "Guests: " + encodeURIComponent(guests) + "%0A";
-                            whatsappText += "Message: " + encodeURIComponent(message);
-                            
-                            let whatsappLink = "https://wa.me/" + phoneNumber + "?text=" + whatsappText;
-                            window.location.href = whatsappLink;
-                        }
-                        </script>
-                    {% endif %}
                 </div>
             </div>
         </div> 
@@ -276,626 +217,159 @@
     <!-- Edit Mode JavaScript -->
     <script src="{% static 'admin/js/edit-mode.js' %}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get slider elements
-            const sliderItems = document.querySelectorAll('.slider-item');
-            const sliderPrev = document.getElementById('slider-prev');
-            const sliderNext = document.getElementById('slider-next');
-            const editImageBtn = document.getElementById('edit-current-image');
-            const editTitleBtn = document.getElementById('edit-current-title');
-            const editDescBtn = document.getElementById('edit-current-description');
-            const editBookingFormBtn = document.getElementById('edit-booking-form');
-            
-            let currentSlideIndex = 0;
-            
-            // Function to get current visible slide
-            function getCurrentSlide() {
-                return sliderItems[currentSlideIndex];
-            }
-            
-            // Function to get element ID of current slide image
-            function getCurrentImageElementId() {
-                const currentSlide = getCurrentSlide();
-                if (!currentSlide) return null;
-                
-                const img = currentSlide.querySelector('img');
-                return img ? img.dataset.elementId : null;
-            }
-            
-            // Function to get header element ID
-            function getHeaderElementId() {
-                // This assumes header_element is available in the template context
-                return "{{ header_element.id }}";
-            }
-            
-            // Function to get booking form element ID
-            function getBookingElementId() {
-                // This assumes booking_elements.0 is available in the template context
-                return "{{ booking_elements.0.id }}";
-            }
-            
-            // Update current slide index when navigating
-            sliderPrev.addEventListener('click', function() {
-                currentSlideIndex = currentSlideIndex > 0 ? currentSlideIndex - 1 : sliderItems.length - 1;
-            });
-            
-            sliderNext.addEventListener('click', function() {
-                currentSlideIndex = currentSlideIndex < sliderItems.length - 1 ? currentSlideIndex + 1 : 0;
-            });
-            
-            // Edit current slide image
-            if (editImageBtn) {
-                editImageBtn.addEventListener('click', function() {
-                    const elementId = getCurrentImageElementId();
-                    if (!elementId) return;
+    // Function to handle element editing
+    function editElement(type, elementId, field = '') {
+        if (type === 'image') {
+            // Open image upload modal
+            openImageUploadModal(elementId);
+        } else if (type === 'text') {
+            // Open text edit modal
+            openTextEditModal(elementId, field);
+        }
+    }
+    
+    // These functions should be defined in edit-mode.js
+    // If they're not, we can add them here as placeholders
+    function openImageUploadModal(elementId) {
+        if (typeof window.openImageEditor === 'function') {
+            window.openImageEditor(elementId);
+        } else {
+            console.log('Opening image upload for element ID:', elementId);
+            // Fallback implementation if the function doesn't exist
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('image', file);
                     
-                    // Create file input
-                    const fileInput = document.createElement('input');
-                    fileInput.type = 'file';
-                    fileInput.accept = 'image/*';
-                    
-                    // Trigger file selection
-                    fileInput.click();
-                    
-                    // File selection handler
-                    fileInput.addEventListener('change', function() {
-                        if (fileInput.files && fileInput.files[0]) {
-                            const formData = new FormData();
-                            formData.append('image', fileInput.files[0]);
-                            
-                            // Show loading indicator
-                            showNotification('Uploading image...', 'info');
-                            
-                            // Upload image to server
-                            fetch(`/dashboard/element/${elementId}/upload-image/`, {
-                                method: 'POST',
-                                body: formData,
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // Update image source
-                                    const currentSlide = getCurrentSlide();
-                                    const img = currentSlide.querySelector('img');
-                                    if (img) {
-                                        img.src = data.src;
-                                    }
-                                    showNotification('Image updated successfully');
-                                } else {
-                                    showNotification('Error updating image', 'error');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                showNotification('Error updating image', 'error');
-                            });
-                        }
-                    });
-                });
-            }
-            
-            // Edit current slide title
-            if (editTitleBtn) {
-                editTitleBtn.addEventListener('click', function() {
-                    const elementId = getHeaderElementId();
-                    if (!elementId) return;
-                    
-                    const currentSlide = getCurrentSlide();
-                    const titleElement = currentSlide.querySelector('.header-title-text');
-                    if (!titleElement) return;
-                    
-                    const originalText = titleElement.innerText;
-                    
-                    // Create modal for title editing
-                    const modal = document.createElement('div');
-                    modal.classList.add('edit-modal');
-                    
-                    const modalContent = document.createElement('div');
-                    modalContent.classList.add('edit-modal-content');
-                    
-                    const title = document.createElement('h3');
-                    title.innerText = 'Edit Title';
-                    
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.value = originalText;
-                    
-                    const saveBtn = document.createElement('button');
-                    saveBtn.innerText = 'Save';
-                    saveBtn.classList.add('edit-save-btn');
-                    
-                    const cancelBtn = document.createElement('button');
-                    cancelBtn.innerText = 'Cancel';
-                    cancelBtn.classList.add('edit-cancel-btn');
-                    
-                    modalContent.appendChild(title);
-                    modalContent.appendChild(input);
-                    modalContent.appendChild(saveBtn);
-                    modalContent.appendChild(cancelBtn);
-                    modal.appendChild(modalContent);
-                    document.body.appendChild(modal);
-                    
-                    // Save button click handler
-                    saveBtn.addEventListener('click', function() {
-                        const newText = input.value;
-                        
-                        // Send update to server
-                        const formData = new FormData();
-                        formData.append('field', 'title');
-                        formData.append('value', newText);
-                        
-                        fetch(`/dashboard/element/${elementId}/update/`, {
-                            method: 'POST',
-                            body: formData,
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Update all title elements (since they share the same content)
-                                const allTitles = document.querySelectorAll('.header-title-text');
-                                allTitles.forEach(el => {
-                                    el.innerText = newText;
-                                });
-                                showNotification('Title updated successfully');
-                            } else {
-                                showNotification('Error updating title', 'error');
-                            }
-                            
-                            // Remove modal
-                            document.body.removeChild(modal);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showNotification('Error updating title', 'error');
-                            document.body.removeChild(modal);
-                        });
-                    });
-                    
-                    // Cancel button click handler
-                    cancelBtn.addEventListener('click', function() {
-                        document.body.removeChild(modal);
-                    });
-                });
-            }
-            
-            // Edit current slide description
-            if (editDescBtn) {
-                editDescBtn.addEventListener('click', function() {
-                    const elementId = getHeaderElementId();
-                    if (!elementId) return;
-                    
-                    const currentSlide = getCurrentSlide();
-                    const descElement = currentSlide.querySelector('.slider-content1');
-                    if (!descElement) return;
-                    
-                    const originalText = descElement.innerText;
-                    
-                    // Create modal for description editing
-                    const modal = document.createElement('div');
-                    modal.classList.add('edit-modal');
-                    
-                    const modalContent = document.createElement('div');
-                    modalContent.classList.add('edit-modal-content');
-                    
-                    const title = document.createElement('h3');
-                    title.innerText = 'Edit Description';
-                    
-                    const textarea = document.createElement('textarea');
-                    textarea.value = originalText;
-                    textarea.style.width = '100%';
-                    textarea.style.height = '150px';
-                    textarea.style.marginBottom = '15px';
-                    
-                    const saveBtn = document.createElement('button');
-                    saveBtn.innerText = 'Save';
-                    saveBtn.classList.add('edit-save-btn');
-                    
-                    const cancelBtn = document.createElement('button');
-                    cancelBtn.innerText = 'Cancel';
-                    cancelBtn.classList.add('edit-cancel-btn');
-                    
-                    modalContent.appendChild(title);
-                    modalContent.appendChild(textarea);
-                    modalContent.appendChild(saveBtn);
-                    modalContent.appendChild(cancelBtn);
-                    modal.appendChild(modalContent);
-                    document.body.appendChild(modal);
-                    
-                    // Save button click handler
-                    saveBtn.addEventListener('click', function() {
-                        const newText = textarea.value;
-                        
-                        // Send update to server
-                        const formData = new FormData();
-                        formData.append('field', 'description');
-                        formData.append('value', newText);
-                        
-                        fetch(`/dashboard/element/${elementId}/update/`, {
-                            method: 'POST',
-                            body: formData,
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Update the first slide's description
-                                const firstSlideDesc = document.querySelector('.slider-item:first-child .slider-content1');
-                                if (firstSlideDesc) {
-                                    firstSlideDesc.innerText = newText;
-                                }
-                                showNotification('Description updated successfully');
-                            } else {
-                                showNotification('Error updating description', 'error');
-                            }
-                            
-                            // Remove modal
-                            document.body.removeChild(modal);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showNotification('Error updating description', 'error');
-                            document.body.removeChild(modal);
-                        });
-                    });
-                    
-                    // Cancel button click handler
-                    cancelBtn.addEventListener('click', function() {
-                        document.body.removeChild(modal);
-                    });
-                });
-            }
-            
-            // Edit booking form
-            if (editBookingFormBtn) {
-                editBookingFormBtn.addEventListener('click', function() {
-                    const elementId = getBookingElementId();
-                    if (!elementId) return;
-                    
-                    // Fetch the current form data
-                    fetch(`/dashboard/element/${elementId}/get/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        let formData;
-                        try {
-                            const jsonData = JSON.parse(data.json_content || '{}');
-                            formData = jsonData.form || {
-                                fields: [
-                                    { name: 'name', type: 'text', label: 'Full Name', required: true },
-                                    { name: 'email', type: 'email', label: 'Email', required: true },
-                                    { name: 'phone', type: 'tel', label: 'Phone Number', required: true },
-                                    { name: 'date', type: 'date', label: 'Trip Date', required: true },
-                                    { name: 'guests', type: 'select', label: 'Number of Guests', required: true, options: ['1', '2', '3', '4', '5+'] },
-                                    { name: 'message', type: 'textarea', label: 'Special Requests', required: false }
-                                ],
-                                submit_text: 'Book Now',
-                                whatsapp_number: '212643562320'
-                            };
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
-                            formData = {
-                                fields: [
-                                    { name: 'name', type: 'text', label: 'Full Name', required: true },
-                                    { name: 'email', type: 'email', label: 'Email', required: true },
-                                    { name: 'phone', type: 'tel', label: 'Phone Number', required: true },
-                                    { name: 'date', type: 'date', label: 'Trip Date', required: true },
-                                    { name: 'guests', type: 'select', label: 'Number of Guests', required: true, options: ['1', '2', '3', '4', '5+'] },
-                                    { name: 'message', type: 'textarea', label: 'Special Requests', required: false }
-                                ],
-                                submit_text: 'Book Now',
-                                whatsapp_number: '212643562320'
-                            };
-                        }
-                        
-                        // Create a user-friendly form editor
-                        createFormEditor(elementId, formData);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching form data:', error);
-                        showNotification('Error fetching form data', 'error');
-                    });
-                });
-            }
-            
-            // Function to create a user-friendly form editor
-            function createFormEditor(elementId, formData) {
-                // Create modal for form editing
-                const modal = document.createElement('div');
-                modal.classList.add('edit-modal');
-                
-                const modalContent = document.createElement('div');
-                modalContent.classList.add('edit-modal-content');
-                modalContent.style.width = '90%';
-                modalContent.style.maxWidth = '800px';
-                modalContent.style.maxHeight = '80vh';
-                modalContent.style.overflow = 'auto';
-                
-                const title = document.createElement('h3');
-                title.innerText = 'Edit Booking Form';
-                
-                // Create form fields editor
-                const fieldsContainer = document.createElement('div');
-                fieldsContainer.style.marginBottom = '20px';
-                
-                const fieldsTitle = document.createElement('h4');
-                fieldsTitle.innerText = 'Form Fields';
-                fieldsContainer.appendChild(fieldsTitle);
-                
-                // Add each field editor
-                formData.fields.forEach((field, index) => {
-                    const fieldEditor = createFieldEditor(field, index);
-                    fieldsContainer.appendChild(fieldEditor);
-                });
-                
-                // Add button to add new field
-                const addFieldBtn = document.createElement('button');
-                addFieldBtn.innerText = '+ Add Field';
-                addFieldBtn.classList.add('edit-save-btn');
-                addFieldBtn.style.marginTop = '10px';
-                addFieldBtn.addEventListener('click', function() {
-                    const newField = {
-                        name: 'new_field_' + Date.now(),
-                        type: 'text',
-                        label: 'New Field',
-                        required: false
-                    };
-                    formData.fields.push(newField);
-                    
-                    const fieldEditor = createFieldEditor(newField, formData.fields.length - 1);
-                    fieldsContainer.insertBefore(fieldEditor, addFieldBtn);
-                });
-                fieldsContainer.appendChild(addFieldBtn);
-                
-                // WhatsApp number editor
-                const whatsappContainer = document.createElement('div');
-                whatsappContainer.style.marginBottom = '20px';
-                
-                const whatsappLabel = document.createElement('label');
-                whatsappLabel.innerText = 'WhatsApp Number:';
-                whatsappLabel.style.display = 'block';
-                whatsappLabel.style.marginBottom = '5px';
-                whatsappLabel.style.fontWeight = 'bold';
-                
-                const whatsappInput = document.createElement('input');
-                whatsappInput.type = 'text';
-                whatsappInput.value = formData.whatsapp_number || '212643562320';
-                whatsappInput.style.width = '100%';
-                whatsappInput.style.marginBottom = '10px';
-                
-                whatsappContainer.appendChild(whatsappLabel);
-                whatsappContainer.appendChild(whatsappInput);
-                
-                // Submit button text editor
-                const submitContainer = document.createElement('div');
-                submitContainer.style.marginBottom = '20px';
-                
-                const submitLabel = document.createElement('label');
-                submitLabel.innerText = 'Submit Button Text:';
-                submitLabel.style.display = 'block';
-                submitLabel.style.marginBottom = '5px';
-                submitLabel.style.fontWeight = 'bold';
-                
-                const submitInput = document.createElement('input');
-                submitInput.type = 'text';
-                submitInput.value = formData.submit_text || 'Book Now';
-                submitInput.style.width = '100%';
-                submitInput.style.marginBottom = '10px';
-                
-                submitContainer.appendChild(submitLabel);
-                submitContainer.appendChild(submitInput);
-                
-                // Save and cancel buttons
-                const saveBtn = document.createElement('button');
-                saveBtn.innerText = 'Save Form';
-                saveBtn.classList.add('edit-save-btn');
-                
-                const cancelBtn = document.createElement('button');
-                cancelBtn.innerText = 'Cancel';
-                cancelBtn.classList.add('edit-cancel-btn');
-                
-                // Add all elements to modal
-                modalContent.appendChild(title);
-                modalContent.appendChild(fieldsContainer);
-                modalContent.appendChild(whatsappContainer);
-                modalContent.appendChild(submitContainer);
-                modalContent.appendChild(saveBtn);
-                modalContent.appendChild(cancelBtn);
-                modal.appendChild(modalContent);
-                document.body.appendChild(modal);
-                
-                // Function to create field editor
-                function createFieldEditor(field, index) {
-                    const fieldEditor = document.createElement('div');
-                    fieldEditor.classList.add('field-editor');
-                    fieldEditor.style.border = '1px solid #ddd';
-                    fieldEditor.style.padding = '10px';
-                    fieldEditor.style.marginBottom = '10px';
-                    fieldEditor.style.borderRadius = '4px';
-                    fieldEditor.style.position = 'relative';
-                    
-                    // Field label
-                    const labelContainer = document.createElement('div');
-                    labelContainer.style.marginBottom = '10px';
-                    
-                    const labelLabel = document.createElement('label');
-                    labelLabel.innerText = 'Field Label:';
-                    labelLabel.style.display = 'block';
-                    labelLabel.style.marginBottom = '5px';
-                    
-                    const labelInput = document.createElement('input');
-                    labelInput.type = 'text';
-                    labelInput.value = field.label || '';
-                    labelInput.style.width = '100%';
-                    labelInput.addEventListener('input', function() {
-                        field.label = this.value;
-                    });
-                    
-                    labelContainer.appendChild(labelLabel);
-                    labelContainer.appendChild(labelInput);
-                    
-                    // Field name
-                    const nameContainer = document.createElement('div');
-                    nameContainer.style.marginBottom = '10px';
-                    
-                    const nameLabel = document.createElement('label');
-                    nameLabel.innerText = 'Field Name (ID):';
-                    nameLabel.style.display = 'block';
-                    nameLabel.style.marginBottom = '5px';
-                    
-                    const nameInput = document.createElement('input');
-                    nameInput.type = 'text';
-                    nameInput.value = field.name || '';
-                    nameInput.style.width = '100%';
-                    nameInput.addEventListener('input', function() {
-                        field.name = this.value;
-                    });
-                    
-                    nameContainer.appendChild(nameLabel);
-                    nameContainer.appendChild(nameInput);
-                    
-                    // Field type
-                    const typeContainer = document.createElement('div');
-                    typeContainer.style.marginBottom = '10px';
-                    
-                    const typeLabel = document.createElement('label');
-                    typeLabel.innerText = 'Field Type:';
-                    typeLabel.style.display = 'block';
-                    typeLabel.style.marginBottom = '5px';
-                    
-                    const typeSelect = document.createElement('select');
-                    typeSelect.style.width = '100%';
-                    
-                    const types = ['text', 'email', 'tel', 'date', 'select', 'textarea'];
-                    types.forEach(type => {
-                        const option = document.createElement('option');
-                        option.value = type;
-                        option.innerText = type.charAt(0).toUpperCase() + type.slice(1);
-                        option.selected = field.type === type;
-                        typeSelect.appendChild(option);
-                    });
-                    
-                    typeSelect.addEventListener('change', function() {
-                        field.type = this.value;
-                        
-                        // Show/hide options container based on type
-                        if (this.value === 'select') {
-                            optionsContainer.style.display = 'block';
-                        } else {
-                            optionsContainer.style.display = 'none';
-                        }
-                    });
-                    
-                    typeContainer.appendChild(typeLabel);
-                    typeContainer.appendChild(typeSelect);
-                    
-                    // Field options (for select type)
-                    const optionsContainer = document.createElement('div');
-                    optionsContainer.style.marginBottom = '10px';
-                    optionsContainer.style.display = field.type === 'select' ? 'block' : 'none';
-                    
-                    const optionsLabel = document.createElement('label');
-                    optionsLabel.innerText = 'Options (one per line):';
-                    optionsLabel.style.display = 'block';
-                    optionsLabel.style.marginBottom = '5px';
-                    
-                    const optionsTextarea = document.createElement('textarea');
-                    optionsTextarea.style.width = '100%';
-                    optionsTextarea.style.height = '80px';
-                    optionsTextarea.value = (field.options || []).join('\n');
-                    optionsTextarea.addEventListener('input', function() {
-                        field.options = this.value.split('\n').filter(opt => opt.trim() !== '');
-                    });
-                    
-                    optionsContainer.appendChild(optionsLabel);
-                    optionsContainer.appendChild(optionsTextarea);
-                    
-                    // Required checkbox
-                    const requiredContainer = document.createElement('div');
-                    requiredContainer.style.marginBottom = '10px';
-                    
-                    const requiredCheckbox = document.createElement('input');
-                    requiredCheckbox.type = 'checkbox';
-                    requiredCheckbox.id = 'required-' + index;
-                    requiredCheckbox.checked = field.required || false;
-                    requiredCheckbox.addEventListener('change', function() {
-                        field.required = this.checked;
-                    });
-                    
-                    const requiredLabel = document.createElement('label');
-                    requiredLabel.innerText = 'Required field';
-                    requiredLabel.htmlFor = 'required-' + index;
-                    requiredLabel.style.marginLeft = '5px';
-                    
-                    requiredContainer.appendChild(requiredCheckbox);
-                    requiredContainer.appendChild(requiredLabel);
-                    
-                    // Delete button
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.innerText = 'Delete';
-                    deleteBtn.classList.add('edit-cancel-btn');
-                    deleteBtn.style.position = 'absolute';
-                    deleteBtn.style.top = '10px';
-                    deleteBtn.style.right = '10px';
-                    deleteBtn.addEventListener('click', function() {
-                        formData.fields.splice(index, 1);
-                        fieldEditor.remove();
-                    });
-                    
-                    // Add all elements to field editor
-                    fieldEditor.appendChild(labelContainer);
-                    fieldEditor.appendChild(nameContainer);
-                    fieldEditor.appendChild(typeContainer);
-                    fieldEditor.appendChild(optionsContainer);
-                    fieldEditor.appendChild(requiredContainer);
-                    fieldEditor.appendChild(deleteBtn);
-                    
-                    return fieldEditor;
-                }
-                
-                // Save button click handler
-                saveBtn.addEventListener('click', function() {
-                    // Update form data
-                    formData.whatsapp_number = whatsappInput.value;
-                    formData.submit_text = submitInput.value;
-                    
-                    // Create complete JSON object
-                    const completeJson = {
-                        form: formData
-                    };
-                    
-                    // Send update to server
-                    const formDataObj = new FormData();
-                    formDataObj.append('field', 'json_content');
-                    formDataObj.append('value', JSON.stringify(completeJson));
-                    
-                    fetch(`/dashboard/element/${elementId}/update/`, {
+                    fetch(`/dashboard/element/${elementId}/upload-image/`, {
                         method: 'POST',
-                        body: formDataObj,
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            showNotification('Form updated successfully');
-                            // Reload the page to reflect changes
-                            window.location.reload();
+                            showNotification('Image updated successfully', 'success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
                         } else {
-                            showNotification('Error updating form', 'error');
+                            showNotification('Error updating image', 'error');
                         }
-                        
-                        // Remove modal
-                        document.body.removeChild(modal);
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        showNotification('Error updating form', 'error');
-                        document.body.removeChild(modal);
+                        showNotification('Error updating image', 'error');
                     });
-                });
+                }
+            };
+            fileInput.click();
+        }
+    }
+    
+    function openTextEditModal(elementId, field) {
+        if (typeof window.openTextEditor === 'function') {
+            window.openTextEditor(elementId, field);
+        } else {
+            console.log('Opening text editor for element ID:', elementId, 'field:', field);
+            // Fetch current content
+            fetch(`/dashboard/element/${elementId}/get/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Extract the correct content based on the field
+                let content = '';
+                if (field === 'title') {
+                    content = data.title || '';
+                } else if (field === 'description') {
+                    content = data.description || '';
+                }
                 
-                // Cancel button click handler
-                cancelBtn.addEventListener('click', function() {
-                    document.body.removeChild(modal);
-                });
+                const newContent = prompt('Edit content:', content);
+                
+                if (newContent !== null && newContent !== content) {
+                    const formData = new FormData();
+                    formData.append('field', field);
+                    formData.append('value', newContent);
+                    
+                    fetch(`/dashboard/element/${elementId}/update/`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Server returned ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Content updated successfully', 'success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            showNotification(data.message || 'Error updating content', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Error updating content: ' + error.message, 'error');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching element data:', error);
+                showNotification('Error fetching content: ' + error.message, 'error');
+            });
+        }
+    }
+    
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `edit-notification edit-notification-${type}`;
+        notification.textContent = message;
+        
+        // Add to document
+        document.body.appendChild(notification);
+        
+        // Remove after delay
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 500);
+        }, 3000);
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-        });
+        }
+        return cookieValue;
+    }
     </script>
     {% endif %}
 </body>
