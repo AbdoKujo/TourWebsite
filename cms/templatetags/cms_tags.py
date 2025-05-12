@@ -41,8 +41,8 @@ def editable_image(context, element, css_class=''):
     alt = element.title or ""
     
     if edit_mode:
-        return mark_safe(f'<div data-editable="image" data-element-id="{element.id}" class="{css_class}">'
-                         f'<img src="{src}" alt="{alt}" class="{css_class}">'
+        return mark_safe(f'<div data-editable="image" data-element-id="{element.id}" class="editable-image-container">'
+                         f'<img src="{src}" alt="{alt}" class="{css_class}" style="max-width:100%;">'
                          f'</div>')
     else:
         return mark_safe(f'<img src="{src}" alt="{alt}" class="{css_class}">')
