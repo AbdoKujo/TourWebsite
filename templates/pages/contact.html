@@ -84,15 +84,4 @@
 </section>
 <!-- end of contact section -->
 
-<!-- map section -->
-<section id="map">
-    <div class="map-container">
-        {% if contact_map_element %}
-            {% editable_text contact_map_element 'src' %}
-        {% else %}
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d108703.0378236329!2d-8.0879233!3d31.6294723!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafee8d96179e51%3A0x5950b6534f87adb8!2sMarrakech%2C%20Morocco!5e0!3m2!1sen!2sus!4v1650000000000!5m2!1sen!2sus" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-        {% endif %}
-    </div>
-</section>
-<!-- end of map section -->
 {% endblock %}

@@ -63,7 +63,7 @@
             {% for element in featured_elements %}
                 {% with parsed=element.json_content|json_parse %}
                     {% if not parsed.type %}
-                        <div class="featured-item my-2 shadow">
+                        <div class="featured-item shadow">
                             {% editable_image element %}
                             <div class="featured-item-content">
                                 <span>
@@ -227,22 +227,60 @@
         if (mode === 'images') {
             // Image edit mode - remove styling that might interfere with image editor
             featuredItems.forEach(item => {
+                // Reset to default state for image editing
                 item.classList.remove('featured-item', 'shadow');
                 item.style.overflow = 'visible';
                 item.style.position = 'relative';
                 item.style.marginBottom = '30px';
+                
+                // Show images again if they were hidden
+                const img = item.querySelector('img');
+                if (img) {
+                    img.style.display = '';
+                    img.style.opacity = '1';
+                }
+                
+                // Reset content styling
+                const content = item.querySelector('.featured-item-content');
+                if (content) {
+                    content.style.position = 'absolute';
+                    content.style.bottom = '0';
+                    content.style.backgroundColor = '';
+                    content.style.color = '';
+                    content.style.zIndex = '';
+                }
             });
             
             // Update button styles
             textBtn.classList.replace('btn-primary', 'btn-secondary');
             imagesBtn.classList.replace('btn-secondary', 'btn-primary');
-        } else {
-            // Text edit mode - restore normal styling
+        } else if (mode === 'text') {
+            // Text edit mode - restructure for text editing
             featuredItems.forEach(item => {
+                // Maintain the item structure but make it easier to edit text
                 item.classList.add('featured-item', 'shadow', 'my-2');
                 item.style.overflow = '';
                 item.style.position = '';
                 item.style.marginBottom = '';
+                
+                // Hide or reduce opacity of images to make text more visible
+                const img = item.querySelector('img');
+                if (img) {
+                    // Make the image almost transparent instead of hiding
+                    img.style.opacity = '0.2';
+                }
+                
+                // Make content easily accessible for editing
+                const content = item.querySelector('.featured-item-content');
+                if (content) {
+                    // Override the style to make content always visible and on top
+                    content.style.transform = 'none';
+                    content.style.opacity = '1';
+                    content.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                    content.style.color = '#fff';
+                    content.style.zIndex = '10';
+                    content.style.padding = '15px';
+                }
             });
             
             // Update button styles

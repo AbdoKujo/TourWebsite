@@ -403,3 +403,40 @@ body.edit-mode {
   color: #6c757d;
   font-size: 12px;
 }
+
+/* Edit mode styles */
+.edit-text-mode .featured-item {
+    background: #fff !important;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1) !important;
+}
+
+.edit-text-mode .featured-item img {
+    opacity: 0.3;
+}
+
+.edit-text-mode .featured-item-content {
+    position: relative !important;
+    background: none !important;
+    color: #333 !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.edit-text-mode .featured-item:hover .featured-item-content {
+    transform: none !important;
+}
+
+.edit-text-mode .featured-item:hover img {
+    transform: none !important;
+}
+
+/* Image edit mode - restore original styling */
+.edit-image-mode .featured-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.edit-image-mode .featured-item img {
+    opacity: 1;
+}
+
