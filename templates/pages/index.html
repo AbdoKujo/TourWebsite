@@ -84,52 +84,45 @@
 <!-- end of featured section -->
 
 <!-- services section -->
-<section id="services" class="py-4">
+<section id="services" class="py-4" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));">
+    <!-- Use the first element's image as background -->
+    {% if services_elements.0 %}
+        <div class="services-bg">
+            {% editable_image services_elements.0 'services-bg-img' %}
+        </div>
+    {% endif %}
+
     <div class="container">
         <div class="title-wrap">
-            <span class="sm-title">
-                {% if services_elements %}
-                    {% for element in services_elements %}
-                        {% with parsed=element.json_content|json_parse %}
-                            {% if parsed.type == 'subtitle' %}
-                                {% editable_text element 'title' %}
-                            {% endif %}
-                        {% endwith %}
-                    {% endfor %}
-                {% endif %}
-            </span>
             <h2 class="lg-title">
-                {% if services_elements %}
-                    {% for element in services_elements %}
-                        {% with parsed=element.json_content|json_parse %}
-                            {% if parsed.type == 'title' %}
-                                {% editable_text element 'title' %}
-                            {% endif %}
-                        {% endwith %}
-                    {% endfor %}
-                {% else %}
-                    Our services
-                {% endif %}
+                {% for element in services_elements %}
+                    {% with parsed=element.json_content|json_parse %}
+                        {% if parsed.type == 'title' %}
+                            {% editable_text element 'title' %}
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
             </h2>
         </div>
 
         <div class="services-row">
-                {% for element in services_elements %}
-                    {% with parsed=element.json_content|json_parse %}
-                        {% if not parsed.type %}
-                            <div class="services-item">
-                                <span class="services-icon" {% if edit_mode %}data-editable="json" data-element-id="{{ element.id }}" data-field="json_content" class="icon-edit"{% endif %}>
-                                    <i class="{{ parsed.icone }}"></i>
-                                    {% if edit_mode %}
-                                    <small class="edit-hint">(Edit Icon)</small>
-                                    {% endif %}
-                                </span>
-                                <h3>{% editable_text element 'title' %}</h3>
-                                <p class="text">{% editable_text element 'description' %}</p>
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
+            <!-- Your existing service items -->
+            {% for element in services_elements %}
+                {% with parsed=element.json_content|json_parse %}
+                    {% if not parsed.type %}
+                        <div class="services-item">
+                            <span class="services-icon" {% if edit_mode %}data-editable="json" data-element-id="{{ element.id }}" data-field="json_content" class="icon-edit"{% endif %}>
+                                <i class="{{ parsed.icone }}"></i>
+                                {% if edit_mode %}
+                                <small class="edit-hint">(Edit Icon)</small>
+                                {% endif %}
+                            </span>
+                            <h3>{% editable_text element 'title' %}</h3>
+                            <p class="text">{% editable_text element 'description' %}</p>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
         </div>
     </div>
 </section>
@@ -262,14 +255,7 @@
                 item.style.overflow = '';
                 item.style.position = '';
                 item.style.marginBottom = '';
-                
-                // Hide or reduce opacity of images to make text more visible
-                const img = item.querySelector('img');
-                if (img) {
-                    // Make the image almost transparent instead of hiding
-                    img.style.opacity = '0.2';
-                }
-                
+                                
                 // Make content easily accessible for editing
                 const content = item.querySelector('.featured-item-content');
                 if (content) {
