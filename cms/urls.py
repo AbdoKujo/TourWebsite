@@ -16,4 +16,5 @@ urlpatterns = [
     path('dashboard/element/<int:element_id>/update/', views.update_element, name='update_element'),
     path('dashboard/element/<int:element_id>/upload-image/', views.upload_image, name='upload_image'),
     path('dashboard/element/<int:element_id>/get/', views.get_element, name='get_element'),
+    path('dashboard/element/<int:element_id>/upload_video/', views.upload_video, name='upload_video'),
 ]

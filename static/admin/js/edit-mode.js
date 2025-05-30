@@ -310,28 +310,31 @@ async function openJsonEditor(elementId) {
 
 // Improve the function to determine JSON type to better detect contact forms
 function determineJsonType(jsonData) {
-  if (jsonData.form && jsonData.contact_info) {
-    return "form" // Contact form with contact info
+  // Check specifically for trip highlights with both highlights array and title
+  if (jsonData.highlights !== undefined && jsonData.title !== undefined) {
+    return "trip_highlights";
+  } else if (jsonData.form && jsonData.contact_info) {
+    return "form";
   } else if (jsonData.form) {
-    return "form" // Regular form
+    return "form";
   } else if (jsonData.items) {
-    return "facts"
+    return "facts";
   } else if (jsonData.contact_info) {
-    return "contact"
+    return "contact";
   } else if (jsonData.icone) {
-    return "icon"
-  } else if (jsonData.price) {
-    return "price"
+    return "icon";
+  } else if (jsonData.price && !jsonData.highlights) {
+    return "price";
   } else if (jsonData.link) {
-    return "link"
+    return "link";
   } else if (jsonData.type === "social_link") {
-    return "social"
-  } else if (jsonData.highlights) {
-    return "highlights"
+    return "social";
   } else if (Array.isArray(jsonData)) {
-    return "navbar"
+    return "navbar";
+  } else if (jsonData.trip) {
+    return "testimonial";
   } else {
-    return "generic"
+    return "generic";
   }
 }
 
@@ -380,6 +383,9 @@ function createJsonEditorModal(elementId, jsonData, jsonType) {
     case "facts":
       content = createFactsEditor(elementId, jsonData)
       break
+    case "trip_highlights":  // Add this case
+      content = createTripHighlightsEditor(elementId, jsonData)
+      break
     case "contact":
       content = createContactEditor(elementId, jsonData)
       break
@@ -400,6 +406,9 @@ function createJsonEditorModal(elementId, jsonData, jsonType) {
       break
     case "navbar":
       content = createNavbarEditor(elementId, jsonData)
+      break
+    case "testimonial": // Add this case
+      content = createTestimonialEditor(elementId, jsonData)
       break
     default:
       content = createGenericEditor(elementId, jsonData)
@@ -471,7 +480,9 @@ function getEditorTitle(jsonType) {
     link: "Edit Link",
     social: "Edit Social Link",
     highlights: "Edit Highlights",
+    trip_highlights: "Edit Trip Details", // Add this
     navbar: "Edit Navigation Menu",
+    testimonial: "Edit Testimonial Trip",
     generic: "Edit Content",
   }
 
@@ -487,76 +498,82 @@ function closeJsonEditor(modal) {
 async function saveJsonChanges(modal, elementId, jsonType) {
   try {
     // Show loading indicator
-    const loading = document.createElement("div")
-    loading.className = "json-editor-loading"
-    loading.innerHTML = '<div class="json-editor-spinner"></div>'
-    modal.appendChild(loading)
+    const loading = document.createElement("div");
+    loading.className = "json-editor-loading";
+    loading.innerHTML = '<div class="json-editor-spinner"></div>';
+    modal.appendChild(loading);
 
     // Get the updated JSON data based on the editor type
-    let jsonData
+    let jsonData;
     switch (jsonType) {
       case "form":
-        jsonData = getFormEditorData()
-        break
+        jsonData = getFormEditorData();
+        break;
       case "facts":
-        jsonData = getFactsEditorData()
-        break
+        jsonData = getFactsEditorData();
+        break;
       case "contact":
-        jsonData = getContactEditorData()
-        break
+        jsonData = getContactEditorData();
+        break;
       case "icon":
-        jsonData = getIconEditorData()
-        break
+        jsonData = getIconEditorData();
+        break;
       case "price":
-        jsonData = getPriceEditorData()
-        break
+        jsonData = getPriceEditorData();
+        break;
       case "link":
-        jsonData = getLinkEditorData()
-        break
+        jsonData = getLinkEditorData();
+        break;
       case "social":
-        jsonData = getSocialEditorData()
-        break
+        jsonData = getSocialEditorData();
+        break;
       case "highlights":
-        jsonData = getHighlightsEditorData()
-        break
+        jsonData = getHighlightsEditorData();
+        break;
       case "navbar":
-        jsonData = getNavbarEditorData()
-        break
+        jsonData = getNavbarEditorData();
+        break;
+      case "testimonial":
+        jsonData = getTestimonialEditorData();
+        break;
+      case "trip_highlights":
+        jsonData = getTripHighlightsEditorData();
+        break;
       default:
-        jsonData = getGenericEditorData()
+        jsonData = getGenericEditorData();
     }
 
     // Send update to server
-    const formData = new FormData()
-    formData.append("field", "json_content")
-    formData.append("value", JSON.stringify(jsonData))
-
+    const formData = new FormData();
+    formData.append("field", "json_content");
+    formData.append("value", JSON.stringify(jsonData));
+    
     const response = await fetch(`/dashboard/element/${elementId}/update/`, {
       method: "POST",
-      body: formData,
-    })
+      body: formData
+    });
 
     if (!response.ok) {
-      throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (data.success) {
-      showNotification("Content updated successfully")
+      showNotification("Content updated successfully");
       // Reload the page to reflect changes
-      setTimeout(() => window.location.reload(), 1000)
+      setTimeout(() => window.location.reload(), 1000);
     } else {
-      throw new Error("Server returned success: false")
+      throw new Error("Server returned success: false");
     }
   } catch (error) {
-    console.error("Error:", error)
-    showNotification(`Error: ${error.message}`, "error")
+    console.error("Error:", error);
+    showNotification(`Error: ${error.message}`, "error");
 
     // Remove loading indicator
-    const loadingIndicator = modal.querySelector(".json-editor-loading")
+    const loadingIndicator = modal.querySelector(".json-editor-loading");
     if (loadingIndicator) {
-      modal.removeChild(loadingIndicator)
+      modal.removeChild(loadingIndicator);
     }
   }
 }
@@ -2154,99 +2171,60 @@ function initEditableText() {
 }
 
 function initEditableVideos() {
-  // Find all elements with data-editable="video" attribute
-  const editableVideos = document.querySelectorAll('[data-editable="video"]')
-
-  editableVideos.forEach((videoContainer) => {
-    // Add edit indicator
-    videoContainer.classList.add("editable-video")
-
-    const elementId = videoContainer.dataset.elementId
-
-    // Create edit button
-    const editBtn = document.createElement("button")
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>'
-    editBtn.classList.add("video-edit-btn")
-    videoContainer.appendChild(editBtn)
-
-    // Edit button click handler
-    editBtn.addEventListener("click", (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-
-      // Create modal for video URL input
-      const modal = document.createElement("div")
-      modal.classList.add("edit-modal")
-
-      const modalContent = document.createElement("div")
-      modalContent.classList.add("edit-modal-content")
-
-      const urlInput = document.createElement("input")
-      urlInput.type = "text"
-      urlInput.placeholder = "Enter video URL"
-      urlInput.value = videoContainer.dataset.src || ""
-
-      const saveBtn = document.createElement("button")
-      saveBtn.innerText = "Save"
-      saveBtn.classList.add("edit-save-btn")
-
-      const cancelBtn = document.createElement("button")
-      cancelBtn.innerText = "Cancel"
-      cancelBtn.classList.add("edit-cancel-btn")
-
-      modalContent.appendChild(urlInput)
-      modalContent.appendChild(saveBtn)
-      modalContent.appendChild(cancelBtn)
-      modal.appendChild(modalContent)
-      document.body.appendChild(modal)
-
-      // Save button click handler
-      saveBtn.addEventListener("click", () => {
-        const newUrl = urlInput.value
-
-        // Send update to server
-        const formData = new FormData()
-        formData.append("field", "src")
-        formData.append("value", newUrl)
-
-        fetch(`/dashboard/element/${elementId}/update/`, {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              // Update video source
-              const video = videoContainer.querySelector("video")
-              if (video) {
-                const source = video.querySelector("source")
-                if (source) {
-                  source.src = newUrl
-                  video.load()
+    // Find all elements with data-editable="video" attribute
+    const editableVideos = document.querySelectorAll('[data-editable="video"]');
+    
+    editableVideos.forEach((videoContainer) => {
+        // Add edit indicator
+        videoContainer.classList.add("editable-video");
+        
+        // Get the element ID
+        const elementId = videoContainer.dataset.elementId;
+        
+        // Create upload overlay if it doesn't exist
+        if (!videoContainer.querySelector('.video-edit-overlay')) {
+            // Create the edit overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'video-edit-overlay';
+            
+            // Create upload button
+            const uploadBtn = document.createElement('button');
+            uploadBtn.className = 'video-edit-btn';
+            uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+            
+            // Add click event to button
+            uploadBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Create file input if it doesn't exist
+                let fileInput = videoContainer.querySelector('.video-upload-input');
+                if (!fileInput) {
+                    fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.className = 'video-upload-input';
+                    fileInput.accept = 'video/*';
+                    fileInput.style.display = 'none';
+                    
+                    // Add change event handler
+                    fileInput.addEventListener('change', (event) => {
+                        uploadVideo(event, elementId);
+                    });
+                    
+                    videoContainer.appendChild(fileInput);
                 }
-              }
-              videoContainer.dataset.src = newUrl
-              showNotification("Video updated successfully")
-            } else {
-              showNotification("Error updating video", "error")
-            }
-
-            // Remove modal
-            document.body.removeChild(modal)
-          })
-          .catch((error) => {
-            console.error("Error:", error)
-            showNotification("Error updating video", "error")
-            document.body.removeChild(modal)
-          })
-      })
-
-      // Cancel button click handler
-      cancelBtn.addEventListener("click", () => {
-        document.body.removeChild(modal)
-      })
-    })
-  })
+                
+                // Trigger file selection
+                fileInput.click();
+            });
+            
+            // Add button to overlay
+            overlay.appendChild(uploadBtn);
+            
+            // Add overlay to container
+            videoContainer.appendChild(overlay);
+        }
+    });
 }
 
 function initEditableHighlights() {
@@ -2747,3 +2725,377 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Update this part in your DOMContentLoaded event
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply background image in all modes
+    const serviceSection = document.getElementById('services');
+    const serviceBgImage = document.querySelector('.services-bg img');
+    
+    if (serviceSection && serviceBgImage) {
+        // Get the image source and encode it
+        const imageSrc = serviceBgImage.getAttribute('src');
+        const encodedImageSrc = encodeURI(imageSrc);
+        
+        // Apply as background image while preserving the gradient overlay
+        serviceSection.style.background = `
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url(${encodedImageSrc}) center/cover no-repeat
+        `;
+        
+        // Set up MutationObserver to watch for image source changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                    const newSrc = serviceBgImage.getAttribute('src');
+                    const encodedNewSrc = encodeURI(newSrc);
+                    serviceSection.style.background = `
+                        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                        url(${encodedNewSrc}) center/cover no-repeat
+                    `;
+                }
+            });
+        });
+        
+        // Start observing the image for src changes
+        observer.observe(serviceBgImage, { attributes: true });
+    }
+});
+
+// Create testimonial editor function
+function createTestimonialEditor(elementId, jsonData) {
+    const container = document.createElement("div");
+    container.className = "json-form-editor";
+    container.setAttribute("data-editor-type", "testimonial");
+
+    // User-friendly message
+    const message = document.createElement("div");
+    message.className = "json-form-message";
+    message.innerHTML = "<strong>Edit Testimonial Trip</strong><br>Edit the trip information for this testimonial below.";
+    container.appendChild(message);
+    
+    // Simple input field for the trip
+    const tripGroup = document.createElement("div");
+    tripGroup.className = "json-form-group";
+    tripGroup.innerHTML = `
+        <label class="json-form-label">Destination</label>
+        <input type="text" class="json-form-input" id="testimonial-trip" value="${jsonData.trip || ''}">
+        <div class="json-help-text">Enter the trip destination (e.g., "Trip to Tangier")</div>
+    `;
+    container.appendChild(tripGroup);
+    
+    return container;
+}
+
+// Add this function to get testimonial editor data
+function getTestimonialEditorData() {
+    return {
+        trip: document.getElementById("testimonial-trip").value
+    };
+}
+
+// Video upload functions
+function openVideoUploader(elementId) {
+    document.getElementById(`video-upload-${elementId}`).click();
+}
+
+// Handle video upload
+async function uploadVideo(event, elementId) {
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    // Check if file is a video
+    if (!file.type.startsWith('video/')) {
+        showNotification('Please select a valid video file', 'error');
+        return;
+    }
+    
+    // Check file size (limit to 100MB for example)
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    if (file.size > maxSize) {
+        showNotification('Video file is too large (max 100MB)', 'error');
+        return;
+    }
+    
+    // Create progress elements
+    const videoContainer = document.querySelector(`[data-element-id="${elementId}"].editable-video-container`);
+    
+    // Add progress bar
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'video-upload-progress';
+    const progressBar = document.createElement('div');
+    progressBar.className = 'video-upload-progress-bar';
+    progressContainer.appendChild(progressBar);
+    
+    // Add status text
+    const statusText = document.createElement('div');
+    statusText.className = 'video-upload-status';
+    statusText.textContent = 'Preparing upload...';
+    
+    // Add elements to container
+    videoContainer.appendChild(progressContainer);
+    videoContainer.appendChild(statusText);
+    
+    try {
+        // Create form data
+        const formData = new FormData();
+        formData.append('video', file);
+        
+        // Upload video with progress tracking
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `/dashboard/element/${elementId}/upload_video/`, true);
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const progress = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = `${progress}%`;
+                statusText.textContent = `Uploading: ${progress}%`;
+            }
+        });
+        
+        // Handle response
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    statusText.textContent = 'Processing video...';
+                    
+                    // Update video source
+                    setTimeout(() => {
+                        const video = videoContainer.querySelector('video');
+                        const source = video.querySelector('source');
+                        
+                        // Clear video src cache by appending timestamp
+                        const newSrc = `${response.src}?t=${new Date().getTime()}`;
+                        
+                        if (source) {
+                            source.src = newSrc;
+                        } else {
+                            const newSource = document.createElement('source');
+                            newSource.src = newSrc;
+                            newSource.type = 'video/mp4';
+                            video.appendChild(newSource);
+                        }
+                        
+                        // Reload the video
+                        video.load();
+                        
+                        // Remove progress elements
+                        videoContainer.removeChild(progressContainer);
+                        videoContainer.removeChild(statusText);
+                        
+                        showNotification('Video uploaded successfully');
+                    }, 1000);
+                } else {
+                    showNotification(response.error || 'Error uploading video', 'error');
+                    videoContainer.removeChild(progressContainer);
+                    videoContainer.removeChild(statusText);
+                }
+            } else {
+                showNotification('Error uploading video', 'error');
+                videoContainer.removeChild(progressContainer);
+                videoContainer.removeChild(statusText);
+            }
+        };
+        
+        // Handle error
+        xhr.onerror = function() {
+            showNotification('Network error while uploading video', 'error');
+            videoContainer.removeChild(progressContainer);
+            videoContainer.removeChild(statusText);
+        };
+        
+        // Start upload
+        xhr.send(formData);
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        showNotification('Error uploading video', 'error');
+        videoContainer.removeChild(progressContainer);
+        videoContainer.removeChild(statusText);
+    }
+}
+
+// Create the comprehensive trip highlights editor
+function createTripHighlightsEditor(elementId, jsonData) {
+  const container = document.createElement("div");
+  container.className = "json-form-editor";
+  container.setAttribute("data-editor-type", "trip_highlights");
+
+  // Header message
+  const message = document.createElement("div");
+  message.className = "json-form-message";
+  message.innerHTML = "<strong>Trip Details Editor</strong><br>Edit all aspects of your trip including title, description, highlights, and pricing.";
+  container.appendChild(message);
+  
+  // Title section
+  const titleSection = document.createElement("div");
+  titleSection.innerHTML = `
+    <div class="json-section-title">Section Title</div>
+    <div class="json-form-group">
+      <label class="json-form-label">Title</label>
+      <input type="text" class="json-form-input" id="trip-title" value="${jsonData.title || 'Trip Highlights'}">
+    </div>
+  `;
+  container.appendChild(titleSection);
+
+  // Description section
+  const descSection = document.createElement("div");
+  descSection.innerHTML = `
+    <div class="json-section-title">Trip Description</div>
+    <div class="json-form-group">
+      <label class="json-form-label">Description</label>
+      <textarea class="json-form-textarea" id="trip-description" style="min-height: 120px;">${jsonData.description || ''}</textarea>
+    </div>
+  `;
+  container.appendChild(descSection);
+  
+  // Price section
+  const priceSection = document.createElement("div");
+  priceSection.innerHTML = `
+    <div class="json-section-title">Price Information</div>
+    <div class="json-form-group">
+      <label class="json-form-label">Price</label>
+      <input type="text" class="json-form-input" id="trip-price" value="${jsonData.price || ''}">
+      <div class="json-help-text">Example: "Starting from 500 MAD per person"</div>
+    </div>
+  `;
+  container.appendChild(priceSection);
+
+  // Highlights items section
+  const itemsSection = document.createElement("div");
+  itemsSection.innerHTML = `
+    <div class="json-section-title">Trip Highlights</div>
+    <div class="json-array-container" id="trip-highlights-container"></div>
+    <button type="button" class="json-add-item-btn" id="add-trip-highlight">
+      <i class="fas fa-plus"></i> Add Highlight
+    </button>
+  `;
+  container.appendChild(itemsSection);
+
+  // Add the items container to the DOM first
+  const itemsContainer = itemsSection.querySelector("#trip-highlights-container");
+
+  // Add existing items
+  const highlights = jsonData.highlights || [];
+  highlights.forEach((highlight, index) => {
+    addTripHighlightItem(itemsContainer, highlight, index);
+  });
+
+  // Add item button handler
+  setTimeout(() => {
+    document.getElementById("add-trip-highlight").addEventListener("click", () => {
+      const newHighlight = "New highlight point";
+      addTripHighlightItem(itemsContainer, newHighlight, highlights.length);
+    });
+  }, 0);
+
+  return container;
+}
+
+// Add a trip highlight item to the container
+function addTripHighlightItem(container, highlight, index) {
+  const highlightItem = document.createElement("div");
+  highlightItem.className = "json-array-item";
+  highlightItem.setAttribute("data-item-index", index);
+
+  // Item header
+  const header = document.createElement("div");
+  header.className = "json-array-item-header";
+
+  const title = document.createElement("h4");
+  title.className = "json-array-item-title";
+  
+  // Create a shorter preview of the text for the header
+  const previewText = highlight.length > 30 ? highlight.substring(0, 30) + '...' : highlight;
+  title.textContent = previewText || `Highlight ${index + 1}`;
+
+  const actions = document.createElement("div");
+  actions.className = "json-array-actions";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "json-array-btn delete";
+  deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+  deleteBtn.addEventListener("click", () => {
+    container.removeChild(highlightItem);
+  });
+
+  const moveUpBtn = document.createElement("button");
+  moveUpBtn.className = "json-array-btn move-up";
+  moveUpBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+  moveUpBtn.addEventListener("click", () => {
+    const prev = highlightItem.previousElementSibling;
+    if (prev) {
+      container.insertBefore(highlightItem, prev);
+    }
+  });
+
+  const moveDownBtn = document.createElement("button");
+  moveDownBtn.className = "json-array-btn move-down";
+  moveDownBtn.innerHTML = '<i class="fas fa-arrow-down"></i>';
+  moveDownBtn.addEventListener("click", () => {
+    const next = highlightItem.nextElementSibling;
+    if (next) {
+      container.insertBefore(next, highlightItem);
+    }
+  });
+
+  actions.appendChild(moveUpBtn);
+  actions.appendChild(moveDownBtn);
+  actions.appendChild(deleteBtn);
+
+  header.appendChild(title);
+  header.appendChild(actions);
+
+  highlightItem.appendChild(header);
+
+  // Item content
+  const content = document.createElement("div");
+  content.className = "json-array-item-content";
+
+  content.innerHTML = `
+    <div class="json-form-group">
+      <label class="json-form-label">Highlight Text</label>
+      <textarea class="json-form-textarea trip-highlight-text">${highlight || ""}</textarea>
+    </div>
+  `;
+
+  highlightItem.appendChild(content);
+  
+  // Update title when content changes
+  setTimeout(() => {
+    const textarea = content.querySelector(".trip-highlight-text");
+    textarea.addEventListener("input", () => {
+      const text = textarea.value;
+      const previewText = text.length > 30 ? text.substring(0, 30) + '...' : text;
+      title.textContent = previewText || `Highlight ${index + 1}`;
+    });
+  }, 0);
+
+  container.appendChild(highlightItem);
+}
+
+// Get trip highlights editor data
+function getTripHighlightsEditorData() {
+  const tripData = {
+    title: document.getElementById("trip-title").value,
+    description: document.getElementById("trip-description").value,
+    price: document.getElementById("trip-price").value,
+    highlights: []
+  };
+
+  // Get highlights
+  const highlightItems = document.querySelectorAll("#trip-highlights-container .json-array-item");
+  highlightItems.forEach((item) => {
+    const text = item.querySelector(".trip-highlight-text").value;
+    if (text.trim()) {
+      tripData.highlights.push(text);
+    }
+  });
+
+  return tripData;
+}

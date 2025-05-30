@@ -6,14 +6,20 @@
 
 {% block content %}
 <!-- header -->
-<header class="flex header-sm">
+<header class="flex header-sm" id="header-section">
+    {% if header_elements.0 %}
+    <div class="header-bg" style="display: none;">
+        {% editable_image header_elements.0 'header-bg-img' %}
+    </div>
+    {% endif %}
+    
     <div class="container">
         <div class="header-title">
             <h1>
-                    {% editable_text header_elements.0 'title' %}
+                {% editable_text header_elements.0 'title' %}
             </h1>
             <p>
-                    {% editable_text header_elements.0 'description' %}
+                {% editable_text header_elements.0 'description' %}
             </p>
         </div>
     </div>

@@ -350,3 +350,46 @@ def upload_image(request, element_id):
     )
     
     return JsonResponse({'success': True, 'src': element.src})
+
+@login_required
+@csrf_exempt
+def upload_video(request, element_id):
+    if request.method != 'POST' or 'video' not in request.FILES:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
+    element = get_object_or_404(Element, id=element_id)
+    
+    # Handle file upload
+    video = request.FILES['video']
+    
+    # Validate video file
+    if not video.content_type.startswith('video/'):
+        return JsonResponse({'error': 'File must be a video'}, status=400)
+    
+    # Create uploads directory if it doesn't exist
+    upload_dir = os.path.join(settings.MEDIA_ROOT, 'videos')
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    # Save the file
+    filename = f"videos/{video.name}"
+    filepath = os.path.join(settings.MEDIA_ROOT, filename)
+    
+    with open(filepath, 'wb+') as destination:
+        for chunk in video.chunks():
+            destination.write(chunk)
+    
+    # Update the element's src field
+    previous_src = element.src
+    element.src = f"/media/{filename}"
+    element.save()
+    
+    # Record the edit history
+    EditHistory.objects.create(
+        user=request.user,
+        element=element,
+        previous_value=previous_src,
+        new_value=element.src,
+        field_name='src'
+    )
+    
+    return JsonResponse({'success': True, 'src': element.src})

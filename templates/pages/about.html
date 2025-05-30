@@ -6,7 +6,13 @@
 
 {% block content %}
 <!-- header -->
-<header class="flex header-sm">
+<header class="flex header-sm" id="header-section">
+    {% if header_element %}
+    <div class="header-bg" style="display: none;">
+        {% editable_image header_element 'header-bg-img' %}
+    </div>
+    {% endif %}
+    
     <div class="container">
         <div class="header-title">
             <h1>{% editable_text header_element 'title' %}</h1>
@@ -25,7 +31,18 @@
                 <div class="tour-details">
                     <h2>{% editable_text element 'title' %}</h2>
                     <p>{% editable_text element 'description' %}</p>
-                    <a href="{% url 'theme_page' link_data.link|cut:'theme/' %}" class="read-more-btn" data-editable="json" data-element-id="{{ element.id }}">{{ link_data.link_text }}</a>
+                    
+                    <!-- Modified read more button with edit button -->
+                    <div class="read-more-container">
+                        <a href="{% url 'theme_page' link_data.link|cut:'theme/' %}" class="read-more-btn">{{ link_data.link_text }}</a>
+                        
+                        {% if edit_mode %}
+                        <button type="button" class="edit-link-btn" 
+                                onclick="editLinkData('{{ element.id }}', '{{ link_data.link_text|escapejs }}', '{{ link_data.link|escapejs }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% endwith %}
@@ -78,4 +95,76 @@
     </div>
 </section>
 <!-- end of facts section -->
+
+{% if edit_mode %}
+<script>
+    function editLinkData(elementId, currentText, currentLink) {
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'edit-modal';
+        modal.innerHTML = `
+            <div class="edit-modal-content">
+                <h3>Edit Read More Link</h3>
+                <div class="form-group">
+                    <label for="link-text">Button Text</label>
+                    <input type="text" id="link-text" value="${currentText}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="link-url">Link URL (format: theme/page-slug)</label>
+                    <input type="text" id="link-url" value="${currentLink}" class="form-control">
+                </div>
+                <div class="button-group">
+                    <button class="edit-save-btn">Save</button>
+                    <button class="edit-cancel-btn">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Handle save button
+        modal.querySelector('.edit-save-btn').addEventListener('click', function() {
+            const linkText = modal.querySelector('#link-text').value.trim();
+            const linkUrl = modal.querySelector('#link-url').value.trim();
+            
+            if (linkText && linkUrl) {
+                const linkData = {
+                    link_text: linkText,
+                    link: linkUrl
+                };
+                
+                // Save the JSON data
+                const formData = new FormData();
+                formData.append('field', 'json_content');
+                formData.append('value', JSON.stringify(linkData));
+                
+                fetch(`/dashboard/element/${elementId}/update/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Link updated successfully');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification('Error updating link', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error updating link', 'error');
+                });
+            }
+            
+            document.body.removeChild(modal);
+        });
+        
+        // Handle cancel button
+        modal.querySelector('.edit-cancel-btn').addEventListener('click', function() {
+            document.body.removeChild(modal);
+        });
+    }
+</script>
+{% endif %}
+
 {% endblock %}

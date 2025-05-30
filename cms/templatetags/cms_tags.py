@@ -71,7 +71,7 @@ def editable_image(context, element, css_class=''):
 @register.simple_tag(takes_context=True)
 def editable_video(context, element, css_class=''):
     """
-    Renders a video that can be edited in edit mode.
+    Renders a video that can be edited in edit mode with upload capability.
     
     Usage:
     {% editable_video element 'video-fluid' %}
@@ -84,9 +84,15 @@ def editable_video(context, element, css_class=''):
     src = element.src or ''
     
     if edit_mode:
-        return mark_safe(f'<div data-editable="video" data-element-id="{element.id}" data-src="{src}" class="{css_class}">'
-                         f'<video controls class="{css_class}"><source src="{src}" type="video/mp4">Your browser does not support the video tag.</video>'
-                         f'</div>')
+        return mark_safe(
+            f'<div data-editable="video" data-element-id="{element.id}" class="editable-video-container">'
+            f'<video controls class="{css_class}"><source src="{src}" type="video/mp4">Your browser does not support the video tag.</video>'
+            f'<div class="video-edit-overlay">'
+            f'<button type="button" class="video-edit-btn" onclick="openVideoUploader({element.id})"><i class="fas fa-edit"></i> Change Video</button>'
+            f'</div>'
+            f'<input type="file" id="video-upload-{element.id}" class="video-upload-input" accept="video/*" style="display:none" onchange="uploadVideo(event, {element.id})">'
+            f'</div>'
+        )
     else:
         return mark_safe(f'<video controls class="{css_class}"><source src="{src}" type="video/mp4">Your browser does not support the video tag.</video>')
 

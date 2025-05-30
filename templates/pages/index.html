@@ -5,14 +5,20 @@
 
 {% block content %}
 <!-- header -->
-<header class="flex">
+<header class="flex" id="header-section">
+    {% if header_elements.0 %}
+    <div class="header-bg" style="display: none;">
+        {% editable_image header_elements.0 'header-bg-img' %}
+    </div>
+    {% endif %}
+    
     <div class="container">
         <div class="header-title">
             <h1>
-                    {% editable_text header_elements.0 'title' %}
+                {% editable_text header_elements.0 'title' %}
             </h1>
             <p>
-                    {% editable_text header_elements.0 'description' %}
+                {% editable_text header_elements.0 'description' %}
             </p>
         </div>
     </div>
@@ -222,6 +228,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
     // play/pause video
     let video = document.querySelector('.video-wrapper video');
@@ -344,7 +351,10 @@ function toggleServicesEditMode(mode) {
 function updateServicesBackground(imageSrc) {
     const servicesSection = document.getElementById('services');
     if (servicesSection && imageSrc) {
-        servicesSection.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${imageSrc}')`;
+        // Ensure the URL is properly encoded
+        const encodedImageSrc = encodeURI(imageSrc);
+        
+        servicesSection.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${encodedImageSrc}')`;
         servicesSection.style.backgroundSize = 'cover';
         servicesSection.style.backgroundPosition = 'center';
         servicesSection.style.backgroundRepeat = 'no-repeat';
@@ -363,5 +373,50 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleServicesEditMode('content');
     {% endif %}
 });
+
+    // Apply header background image
+    document.addEventListener('DOMContentLoaded', function() {
+        const headerSection = document.getElementById('header-section');
+        const headerBgImg = document.querySelector('.header-bg img');
+        
+        if (headerSection && headerBgImg) {
+            // Get the image source and encode it properly
+            const imageSrc = headerBgImg.getAttribute('src');
+            const encodedImageSrc = encodeURI(imageSrc);
+            
+            // Apply as background image while preserving the gradient overlay
+            headerSection.style.background = `
+                linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                url(${encodedImageSrc}) center/cover no-repeat
+            `;
+        }
+        
+        {% if edit_mode %}
+        // Make the header background editable in edit mode
+        const headerBg = document.querySelector('.header-bg');
+        if (headerBg) {
+            headerBg.style.display = 'block';
+            headerBg.style.position = 'absolute';
+            headerBg.style.top = '20px';
+            headerBg.style.right = '20px';
+            headerBg.style.zIndex = '10';
+            headerBg.style.background = 'rgba(255,255,255,0.7)';
+            headerBg.style.padding = '10px';
+            headerBg.style.borderRadius = '5px';
+            headerBg.style.border = '2px dashed #1ec6b6';
+            
+            // Add a label
+            const label = document.createElement('div');
+            label.textContent = 'Edit Header Background';
+            label.style.textAlign = 'center';
+            label.style.marginTop = '5px';
+            label.style.fontSize = '12px';
+            label.style.color = '#333';
+            label.style.fontWeight = 'bold';
+            
+            headerBg.appendChild(label);
+        }
+        {% endif %}
+    });
 </script>
 {% endblock %}

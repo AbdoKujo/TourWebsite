@@ -30,6 +30,98 @@
     {% endif %}
     
     {% block extra_css %}{% endblock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply header background image to all pages
+            const headerSection = document.getElementById('header-section');
+            const headerBgImg = document.querySelector('.header-bg img');
+            
+            if (headerSection && headerBgImg) {
+                // Apply with the new function instead of duplicating code
+                applyBackgroundWithEncoding('#header-section', '.header-bg img');
+            }
+            
+            {% if edit_mode %}
+            // Make the header background editable in edit mode
+            const headerBg = document.querySelector('.header-bg');
+            if (headerBg) {
+                headerBg.style.display = 'block';
+                headerBg.style.position = 'absolute';
+                headerBg.style.top = '20px';
+                headerBg.style.right = '20px';
+                headerBg.style.zIndex = '10';
+                headerBg.style.background = 'rgba(255,255,255,0.7)';
+                headerBg.style.padding = '10px';
+                headerBg.style.borderRadius = '5px';
+                headerBg.style.border = '2px dashed #1ec6b6';
+                
+                // Add a label
+                const label = document.createElement('div');
+                label.textContent = 'Edit Header Background';
+                label.style.textAlign = 'center';
+                label.style.marginTop = '5px';
+                label.style.fontSize = '12px';
+                label.style.color = '#333';
+                label.style.fontWeight = 'bold';
+                
+                headerBg.appendChild(label);
+            }
+            {% endif %}
+            
+            // Try to apply to services section if it exists on this page
+            applyBackgroundWithEncoding('#services', '.services-bg img', 'rgba(0, 0, 0, 0.5)');
+            
+            // Try to apply to other sections that might have backgrounds
+            applyBackgroundWithEncoding('#about-header', '.about-header-bg img');
+            applyBackgroundWithEncoding('#contact-header', '.contact-header-bg img');
+            applyBackgroundWithEncoding('#gallery-header', '.gallery-header-bg img');
+            
+            // Apply to any section with a background image
+            document.querySelectorAll('[data-has-bg-image]').forEach(section => {
+                const sectionId = section.id;
+                const imageSelector = `.${sectionId}-bg img`;
+                applyBackgroundWithEncoding(`#${sectionId}`, imageSelector);
+            });
+        });
+
+        // Generic function to apply background image with proper encoding
+        function applyBackgroundWithEncoding(elementSelector, imageSelector, overlay = 'rgba(0, 0, 0, 0.4)') {
+            const element = document.querySelector(elementSelector);
+            const image = document.querySelector(imageSelector);
+            
+            if (element && image) {
+                // Get the image source and encode it properly
+                const imageSrc = image.getAttribute('src');
+                const encodedImageSrc = encodeURI(imageSrc);
+                
+                // Apply as background image with overlay
+                element.style.background = `
+                    linear-gradient(${overlay}, ${overlay}),
+                    url(${encodedImageSrc}) center/cover no-repeat
+                `;
+                
+                // Set up observer for changes
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                            const newSrc = image.getAttribute('src');
+                            const encodedNewSrc = encodeURI(newSrc);
+                            element.style.background = `
+                                linear-gradient(${overlay}, ${overlay}),
+                                url(${encodedNewSrc}) center/cover no-repeat
+                            `;
+                        }
+                    });
+                });
+                
+                // Start observing the image for src changes
+                observer.observe(image, { attributes: true });
+                
+                return true;
+            }
+            return false;
+        }
+    </script>
 </head>
 <body {% if edit_mode %}class="edit-mode"{% endif %}>
     {% include 'includes/navbar.html' %}

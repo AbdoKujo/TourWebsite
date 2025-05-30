@@ -181,21 +181,31 @@
                         
                         <div class="trip-highlights">
                             <h3>{% with highlight_data=about_trip_elements.0.json_content|json_parse %}{{ highlight_data.title }}{% endwith %}</h3>
+                            
+                            {% if edit_mode %}
+                            <!-- Add prominent edit button -->
+                            <button type="button" class="trip-edit-btn" onclick="openJsonEditor('{{ about_trip_elements.0.id }}')">
+                                <i class="fas fa-edit"></i> Edit Trip Details
+                            </button>
+                            {% endif %}
+                            
                             {% editable_highlights about_trip_elements.0 %}
                             <p>{% with highlight_data=about_trip_elements.0.json_content|json_parse %}{{ highlight_data.description }}{% endwith %}</p>
+
+                            {% if about_trip_elements %}
+                                {% with highlight_data=about_trip_elements.0.json_content|json_parse %}
+                                    {% if highlight_data.price %}
+                                        <div class="price-section">
+                                            <h4>Price</h4>
+                                            <p>{{ highlight_data.price }}</p>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endif %}
                         </div>
                         
                     
-                    {% if about_trip_elements %}
-                        {% with highlight_data=about_trip_elements.0.json_content|json_parse %}
-                            {% if highlight_data.price %}
-                                <div {% if edit_mode %}data-editable="json" data-element-id="{{ about_trip_elements.0.id }}"{% endif %}>
-                                    <h4>Price</h4>
-                                    <p>{{ highlight_data.price }}</p>
-                                </div>
-                            {% endif %}
-                        {% endwith %}
-                    {% endif %}
+                    
                 </div>
                 
                 <div class="booking-form">
@@ -297,26 +307,6 @@
                 
                 const newContent = prompt('Edit content:', content);
                 
-                if (newContent !== null && newContent !== content) {
-                    const formData = new FormData();
-                    formData.append('field', field);
-                    formData.append('value', newContent);
-                    
-                    fetch(`/dashboard/element/${elementId}/update/`, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Server returned ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
                             showNotification('Content updated successfully', 'success');
                             setTimeout(() => {
                                 window.location.reload();

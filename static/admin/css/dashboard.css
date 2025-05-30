@@ -130,6 +130,7 @@ body.edit-mode {
   padding: 2px;
   border: 2px dashed transparent;
   transition: border-color 0.3s;
+  color: inherit !important;
 }
 
 .editable-text:hover {
@@ -164,6 +165,12 @@ body.edit-mode {
   font-size: inherit;
   font-family: inherit;
   margin-bottom: 10px;
+  color: #333 !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+  padding: 8px !important;
+  width: 100% !important;
+  min-height: 100px !important;
 }
 
 .edit-save-btn,
@@ -174,6 +181,7 @@ body.edit-mode {
   cursor: pointer;
   font-size: 14px;
   margin-right: 5px;
+  color: white !important;
 }
 
 .edit-save-btn {
@@ -688,4 +696,270 @@ body.edit-mode .services-bg {
   .background-editor-card {
     max-width: 100%;
   }
+}
+
+/* Header background editor styles */
+body.edit-mode .header-bg {
+    position: absolute !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 10 !important;
+    background: rgba(255,255,255,0.7) !important;
+    padding: 10px !important;
+    border-radius: 5px !important;
+    border: 2px dashed #1ec6b6 !important;
+    max-width: 200px !important;
+}
+
+body.edit-mode .header-bg img {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin-bottom: 5px !important;
+}
+
+/* Read more link with edit button */
+.read-more-container {
+    position: relative;
+    display: inline-block;
+}
+
+.edit-link-btn {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    background-color: #1ec6b6;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.read-more-container:hover .edit-link-btn {
+    opacity: 1;
+    transform: translateY(-5px);
+}
+
+/* Improve form input visibility in edit modals */
+.edit-modal-content input[type="text"], 
+.edit-modal-content input[type="url"],
+.edit-modal-content input.form-control {
+  color: #333 !important;
+  background-color: #fff !important;
+}
+
+/* Make form labels also clearly visible */
+.edit-modal-content .form-group label {
+  color: #333 !important;
+  font-weight: 600;
+}
+
+/* Ensure text is visible in button-group */
+.edit-modal-content .button-group {
+  margin-top: 15px;
+}
+
+/* Fix white text in editable elements - especially over dark backgrounds */
+.editable-text {
+  color: inherit !important;
+}
+
+/* Ensure text is visible when editing */
+.editable-textarea {
+  color: #333 !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+  padding: 8px !important;
+  width: 100% !important;
+  min-height: 100px !important;
+}
+
+/* Make text visible in editable elements over dark backgrounds */
+#services .editable-text {
+  color: white !important;
+}
+
+#services .editable-textarea {
+  color: #333 !important;
+  background-color: white !important;
+}
+
+/* Fix all form controls in edit modals */
+.edit-modal-content input,
+.edit-modal-content textarea,
+.edit-modal-content select,
+.editable-textarea,
+input.json-form-input,
+textarea.json-form-textarea,
+select.json-form-select {
+  color: #333 !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+}
+
+/* Ensure button text is visible in edit mode */
+.edit-save-btn,
+.edit-cancel-btn {
+  color: white !important;
+}
+
+/* Video editing styles */
+.editable-video-container {
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.editable-video-container video {
+  width: 100%;
+  display: block;
+}
+
+.video-edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.editable-video-container:hover .video-edit-overlay {
+  opacity: 1;
+}
+
+.video-edit-btn {
+  background-color: #1ec6b6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.video-edit-btn:hover {
+  background-color: #19a89a;
+  transform: translateY(-2px);
+}
+
+.video-edit-btn i {
+  font-size: 18px;
+}
+
+/* Video upload progress */
+.video-upload-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.video-upload-progress-bar {
+  height: 100%;
+  background-color: #1ec6b6;
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+.video-upload-status {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Trip edit button - highly visible */
+.trip-edit-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #1ec6b6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trip-edit-btn:hover {
+  background-color: #19a89a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.trip-edit-btn i {
+  font-size: 16px;
+}
+
+/* Make the container relative for button positioning */
+.trip-highlights {
+  position: relative;
+  padding-top: 15px; /* Make room for the button */
+}
+
+/* Highlight edit indicators for better visibility */
+.trip-highlights .editable-text:hover {
+  background-color: rgba(30, 198, 182, 0.1);
+}
+
+/* Make price section also clearly editable */
+.price-section {
+  position: relative;
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+}
+
+.price-section:hover {
+  background-color: rgba(30, 198, 182, 0.05);
+  border-color: #1ec6b6;
+}
+
+/* Trip editor specific styling */
+.json-form-editor[data-editor-type="trip_highlights"] .json-form-textarea {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Make sure content is visible */
+.json-form-textarea,
+.json-form-input {
+  color: #333 !important;
+  background-color: #fff !important;
 }

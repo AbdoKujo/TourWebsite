@@ -1045,3 +1045,30 @@
     gap: 10px;
   }
 }
+
+/* Testimonial editor styles */
+.json-form-editor[data-editor-type="testimonial"] {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.json-form-editor[data-editor-type="testimonial"] .json-form-input {
+  font-size: 16px;
+  padding: 12px;
+  color: #333 !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+}
+
+.json-form-editor[data-editor-type="testimonial"] .json-form-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.json-form-editor[data-editor-type="testimonial"] .json-help-text {
+  margin-top: 8px;
+  font-style: italic;
+}
