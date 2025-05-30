@@ -85,27 +85,42 @@
 
 <!-- services section -->
 <section id="services" class="py-4" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));">
-    <!-- Use the first element's image as background -->
-    {% if services_elements.0 %}
-        <div class="services-bg">
-            {% editable_image services_elements.0 'services-bg-img' %}
-        </div>
-    {% endif %}
-
     <div class="container">
         <div class="title-wrap">
-            <h2 class="lg-title">
-                {% for element in services_elements %}
-                    {% with parsed=element.json_content|json_parse %}
-                        {% if parsed.type == 'title' %}
-                            {% editable_text element 'title' %}
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
-            </h2>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="lg-title">
+                    {% for element in services_elements %}
+                        {% with parsed=element.json_content|json_parse %}
+                            {% if parsed.type == 'title' %}
+                                {% editable_text element 'title' %}
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </h2>
+                {% if edit_mode %}
+                <div class="edit-buttons">
+                    <button type="button" class="btn btn-sm btn-primary" id="editServicesBackgroundBtn" onclick="toggleServicesEditMode('background')">Edit Background</button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="editServicesContentBtn" onclick="toggleServicesEditMode('content')">Edit Services</button>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="services-row">
+        <!-- Background Image Editor (hidden by default) -->
+        {% if edit_mode and services_elements.0 %}
+        <div id="servicesBackgroundEditor" class="services-background-editor" style="display: none;">
+            <div class="background-editor-card">
+                <h4>Edit Background Image</h4>
+                <div class="current-background">
+                    <p>Current Background:</p>
+                    {% editable_image services_elements.0 'services-bg-preview' %}
+                </div>
+                <button type="button" class="btn btn-sm btn-success" onclick="toggleServicesEditMode('content')">Done Editing Background</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="services-row" id="servicesContent">
             <!-- Your existing service items -->
             {% for element in services_elements %}
                 {% with parsed=element.json_content|json_parse %}
@@ -125,6 +140,13 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Hidden background image for CSS background -->
+    {% if services_elements.0 %}
+    <div id="servicesBackgroundImage" style="display: none;">
+        <img src="{{ services_elements.0.src }}" alt="Services Background" onload="updateServicesBackground(this.src)">
+    </div>
+    {% endif %}
 </section>
 <!-- end of services section -->
 
@@ -281,5 +303,65 @@
         toggleEditMode('text');
     });
     {% endif %}
+
+// Services section edit mode toggle
+function toggleServicesEditMode(mode) {
+    const backgroundEditor = document.getElementById('servicesBackgroundEditor');
+    const servicesContent = document.getElementById('servicesContent');
+    const backgroundBtn = document.getElementById('editServicesBackgroundBtn');
+    const contentBtn = document.getElementById('editServicesContentBtn');
+    
+    if (mode === 'background') {
+        // Show background editor, hide services content
+        if (backgroundEditor) {
+            backgroundEditor.style.display = 'block';
+        }
+        servicesContent.style.opacity = '0.3';
+        servicesContent.style.pointerEvents = 'none';
+        
+        // Update button styles
+        backgroundBtn.classList.replace('btn-primary', 'btn-success');
+        backgroundBtn.textContent = 'Editing Background...';
+        contentBtn.classList.replace('btn-primary', 'btn-secondary');
+        contentBtn.textContent = 'Edit Services';
+    } else {
+        // Show services content, hide background editor
+        if (backgroundEditor) {
+            backgroundEditor.style.display = 'none';
+        }
+        servicesContent.style.opacity = '1';
+        servicesContent.style.pointerEvents = 'auto';
+        
+        // Update button styles
+        backgroundBtn.classList.replace('btn-success', 'btn-primary');
+        backgroundBtn.textContent = 'Edit Background';
+        contentBtn.classList.replace('btn-secondary', 'btn-primary');
+        contentBtn.textContent = 'Editing Services...';
+    }
+}
+
+// Update services background image
+function updateServicesBackground(imageSrc) {
+    const servicesSection = document.getElementById('services');
+    if (servicesSection && imageSrc) {
+        servicesSection.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${imageSrc}')`;
+        servicesSection.style.backgroundSize = 'cover';
+        servicesSection.style.backgroundPosition = 'center';
+        servicesSection.style.backgroundRepeat = 'no-repeat';
+    }
+}
+
+// Initialize services background on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const backgroundImg = document.querySelector('#servicesBackgroundImage img');
+    if (backgroundImg && backgroundImg.src) {
+        updateServicesBackground(backgroundImg.src);
+    }
+    
+    {% if edit_mode %}
+    // Initialize in content edit mode by default
+    toggleServicesEditMode('content');
+    {% endif %}
+});
 </script>
 {% endblock %}

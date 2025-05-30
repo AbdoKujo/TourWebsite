@@ -30,6 +30,47 @@ def get_footer_elements():
     # Return empty queryset if no footer elements found
     return Element.objects.none()
 
+# Add this function to get navbar elements for all pages
+def get_navbar_elements():
+    """Get navbar elements to be used across all pages"""
+    # Initialize result dictionary
+    result = {}
+    
+    try:
+        # Try to get the navbar section from the home page first
+        home_page = Page.objects.get(slug='index')
+        
+        # Get navbar section
+        navbar_section = home_page.sections.filter(name='navbar').first()
+        if navbar_section:
+            # First check for a JSON-based navbar element
+            navbar_element = navbar_section.elements.filter(
+                json_content__isnull=False
+            ).exclude(json_content='').first()
+            
+            if navbar_element:
+                result['navbar_element'] = navbar_element
+            else:
+                # If no JSON navbar, get individual elements
+                elements = navbar_section.elements.all().order_by('order')
+                if elements.exists():
+                    result['navbar_elements'] = elements
+        
+        # Always try to get the navbar logo element
+        logo_section = home_page.sections.filter(name='navbar_logo').first()
+        if logo_section:
+            logo_element = logo_section.elements.first()
+            if logo_element:
+                result['navbar_logo_element'] = logo_element
+        
+        return result
+    
+    except (Page.DoesNotExist, AttributeError):
+        pass
+    
+    # Return empty dict if nothing found
+    return {}
+
 # Frontend views
 def home(request):
     page = get_object_or_404(Page, slug='index')
@@ -51,6 +92,9 @@ def home(request):
     
     # Add footer elements to context
     context['footer_elements'] = get_footer_elements()
+    
+    # Add navbar elements to context
+    context.update(get_navbar_elements())
     
     return render(request, 'pages/index.html', context)
 
@@ -81,6 +125,9 @@ def page_detail(request, slug):
     # Add footer elements to context
     context['footer_elements'] = get_footer_elements()
     
+    # Add navbar elements to context
+    context.update(get_navbar_elements())
+    
     return render(request, template_name, context)
 
 def theme_page(request, slug):
@@ -104,6 +151,9 @@ def theme_page(request, slug):
     
     # Add footer elements to context
     context['footer_elements'] = get_footer_elements()
+    
+    # Add navbar elements to context
+    context.update(get_navbar_elements())
     
     return render(request, 'pages/theme_page.html', context)
 

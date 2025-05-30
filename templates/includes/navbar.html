@@ -14,23 +14,36 @@
         <button type="button" id="navbar-show-btn" class="flex">
             <i class="fas fa-bars"></i>
         </button>
+        
+        {% if edit_mode %}
+        <div class="navbar-edit-toggle">
+            <button id="navbar-edit-btn" type="button">
+                <i class="fas fa-edit"></i> Edit Navbar
+            </button>
+        </div>
+        {% endif %}
+        
         <div id="navbar-collapse">
             <button type="button" id="navbar-close-btn" class="flex">
                 <i class="fas fa-times"></i>
             </button>
+            
             {% if navbar_element %}
                 <!-- Editable navbar items from JSON -->
-                <div data-editable="json" data-element-id="{{ navbar_element.id }}" class="navbar-json-container">
-                    <ul class="navbar-nav">
-                        {% with navbar_element.json_content|json_parse as navbar_data %}
-                            {% for item in navbar_data %}
-                                <li class="nav-item">
-                                    <a href="{{ item.src }}" class="nav-link">{{ item.title }}</a>
-                                </li>
-                            {% endfor %}
-                        {% endwith %}
-                    </ul>
+                <div id="navbar-json-editor" data-editable="json" data-element-id="{{ navbar_element.id }}" class="navbar-json-container" style="display: none;">
+                    <!-- This will be populated by the JSON editor when editing is active -->
                 </div>
+                
+                <!-- Regular navigation display -->
+                <ul class="navbar-nav" id="navbar-navigation">
+                    {% with navbar_element.json_content|json_parse as navbar_data %}
+                        {% for item in navbar_data %}
+                            <li class="nav-item">
+                                <a href="{{ item.src }}" class="nav-link">{{ item.title }}</a>
+                            </li>
+                        {% endfor %}
+                    {% endwith %}
+                </ul>
             {% elif navbar_elements %}
                 <!-- Legacy individual navbar elements -->
                 <ul class="navbar-nav">
@@ -61,3 +74,237 @@
     </div>
 </nav>
 <!-- end of navbar  -->
+
+{% if edit_mode %}
+<style>
+    /* Navbar Edit Button Styles */
+    .navbar-edit-toggle {
+        position: absolute;
+        top: 15px;
+        right: 80px;
+        z-index: 100;
+    }
+    
+    #navbar-edit-btn {
+        background-color: #1ec6b6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    #navbar-edit-btn:hover {
+        background-color: #19a89a;
+    }
+    
+    #navbar-edit-btn.active {
+        background-color: #dc3545;
+    }
+    
+    #navbar-edit-btn.active:hover {
+        background-color: #c82333;
+    }
+    
+    /* Make navbar editor more visible when active */
+    .navbar-editing-active .navbar-json-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .navbar-edit-toggle {
+            top: 15px;
+            right: 70px;
+        }
+        
+        #navbar-edit-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editBtn = document.getElementById('navbar-edit-btn');
+        const jsonEditor = document.getElementById('navbar-json-editor');
+        const navbarNavigation = document.getElementById('navbar-navigation');
+        const navbar = document.querySelector('.navbar');
+        
+        if (editBtn && jsonEditor && navbarNavigation) {
+            editBtn.addEventListener('click', function() {
+                const isEditingActive = this.classList.contains('active');
+                
+                if (isEditingActive) {
+                    // Deactivate editing
+                    this.classList.remove('active');
+                    this.innerHTML = '<i class="fas fa-edit"></i> Edit Navbar';
+                    jsonEditor.style.display = 'none';
+                    navbarNavigation.style.display = 'flex';
+                    navbar.classList.remove('navbar-editing-active');
+                    
+                    // Reload the page to see the changes
+                    if (jsonEditor.dataset.hasChanges === 'true') {
+                        location.reload();
+                    }
+                } else {
+                    // Activate editing
+                    this.classList.add('active');
+                    this.innerHTML = '<i class="fas fa-times"></i> Close Editor';
+                    
+                    // Initialize the JSON editor
+                    initJsonEditor(jsonEditor, navbarNavigation);
+                    
+                    // Show the editor, hide the navigation
+                    jsonEditor.style.display = 'block';
+                    navbarNavigation.style.display = 'none';
+                    navbar.classList.add('navbar-editing-active');
+                }
+            });
+        }
+        
+        // Function to initialize the JSON editor
+        function initJsonEditor(editorContainer, navigationContainer) {
+            const elementId = editorContainer.dataset.elementId;
+            
+            // Get the element's current JSON content
+            fetch(`/dashboard/element/${elementId}/get/`)
+                .then(response => response.json())
+                .then(data => {
+                    let navItems;
+                    try {
+                        navItems = JSON.parse(data.json_content);
+                    } catch (e) {
+                        navItems = [];
+                    }
+                    
+                    // Create the editor interface
+                    let editorHtml = `
+                        <div class="json-editor-header">
+                            <h4>Navigation Items</h4>
+                            <p>Edit your navigation menu items below.</p>
+                        </div>
+                        <div class="json-editor-items">
+                    `;
+                    
+                    navItems.forEach((item, index) => {
+                        editorHtml += `
+                            <div class="json-editor-item" data-index="${index}">
+                                <div class="form-group">
+                                    <label>Menu Text</label>
+                                    <input type="text" class="form-control nav-item-title" value="${item.title || ''}" placeholder="Menu Text">
+                                </div>
+                                <div class="form-group">
+                                    <label>Link URL</label>
+                                    <input type="text" class="form-control nav-item-url" value="${item.src || ''}" placeholder="Link URL">
+                                </div>
+                                <button type="button" class="remove-nav-item"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                    });
+                    
+                    editorHtml += `
+                        </div>
+                        <div class="json-editor-actions">
+                            <button type="button" id="add-nav-item"><i class="fas fa-plus"></i> Add Item</button>
+                            <button type="button" id="save-nav-items"><i class="fas fa-save"></i> Save Changes</button>
+                        </div>
+                    `;
+                    
+                    // Set the HTML content
+                    editorContainer.innerHTML = editorHtml;
+                    
+                    // Add event listeners
+                    
+                    // Add new item
+                    document.getElementById('add-nav-item').addEventListener('click', function() {
+                        const itemsContainer = document.querySelector('.json-editor-items');
+                        const itemCount = itemsContainer.querySelectorAll('.json-editor-item').length;
+                        
+                        const newItem = document.createElement('div');
+                        newItem.className = 'json-editor-item';
+                        newItem.dataset.index = itemCount;
+                        newItem.innerHTML = `
+                            <div class="form-group">
+                                <label>Menu Text</label>
+                                <input type="text" class="form-control nav-item-title" value="" placeholder="Menu Text">
+                            </div>
+                            <div class="form-group">
+                                <label>Link URL</label>
+                                <input type="text" class="form-control nav-item-url" value="" placeholder="Link URL">
+                            </div>
+                            <button type="button" class="remove-nav-item"><i class="fas fa-trash"></i></button>
+                        `;
+                        
+                        itemsContainer.appendChild(newItem);
+                        
+                        // Add event listener to the new remove button
+                        newItem.querySelector('.remove-nav-item').addEventListener('click', function() {
+                            itemsContainer.removeChild(newItem);
+                        });
+                    });
+                    
+                    // Remove item buttons
+                    document.querySelectorAll('.remove-nav-item').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const item = this.closest('.json-editor-item');
+                            item.parentNode.removeChild(item);
+                        });
+                    });
+                    
+                    // Save changes
+                    document.getElementById('save-nav-items').addEventListener('click', function() {
+                        const items = [];
+                        
+                        document.querySelectorAll('.json-editor-item').forEach(item => {
+                            const title = item.querySelector('.nav-item-title').value;
+                            const url = item.querySelector('.nav-item-url').value;
+                            
+                            if (title && url) {
+                                items.push({
+                                    title: title,
+                                    src: url
+                                });
+                            }
+                        });
+                        
+                        // Save the updated JSON
+                        const formData = new FormData();
+                        formData.append('field', 'json_content');
+                        formData.append('value', JSON.stringify(items));
+                        
+                        fetch(`/dashboard/element/${elementId}/update/`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification('Navigation menu updated successfully');
+                                editorContainer.dataset.hasChanges = 'true';
+                            } else {
+                                showNotification('Error updating navigation menu', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showNotification('Error updating navigation menu', 'error');
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    editorContainer.innerHTML = '<p class="text-danger">Error loading navigation data</p>';
+                });
+        }
+    });
+</script>
+{% endif %}
