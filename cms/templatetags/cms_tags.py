@@ -19,8 +19,29 @@ def editable_text(context, element, field='description'):
     
     content = getattr(element, field, '')
     
+    # Special handling for navbar logo
+    if element.section and element.section.name == 'navbar_logo':
+        # Add spans if not already present
+        if '<span>' not in content:
+            parts = content.split()
+            if len(parts) >= 3:
+                # Format: First Second<span>Third</span>
+                content = f"{parts[0]}<span>{parts[1]}</span><span>{parts[2]}</span>"
+            elif len(parts) == 2:
+                # Format: First<span>Second</span>
+                content = f"{parts[0]}<span>{parts[1]}</span>"
+    
     if edit_mode:
-        return mark_safe(f'<div data-editable="text" data-element-id="{element.id}" data-field="{field}">{content}</div>')
+        if element.section and element.section.name == 'navbar_logo':
+            return mark_safe(
+                f'<div data-editable="logo" data-element-id="{element.id}" '
+                f'data-field="{field}">{content}</div>'
+            )
+        else:
+            return mark_safe(
+                f'<div data-editable="text" data-element-id="{element.id}" '
+                f'data-field="{field}">{content}</div>'
+            )
     else:
         return mark_safe(content)
 

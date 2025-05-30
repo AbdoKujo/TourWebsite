@@ -928,3 +928,120 @@
 .editable-image img {
   transition: none !important;
 }
+
+/* Navbar editing styles */
+.editable-navbar {
+  position: relative;
+}
+
+.navbar-edit-btn,
+.navbar-edit-note {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background-color: #1ec6b6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-edit-btn:hover {
+  background-color: #17a2b8;
+}
+
+.navbar-edit-note {
+  background-color: #17a2b8;
+  cursor: default;
+}
+
+.navbar-json-container[data-editable="json"] {
+  position: relative;
+}
+
+.navbar-json-container[data-editable="json"]:hover {
+  outline: 2px dashed #1ec6b6;
+  outline-offset: 2px;
+}
+
+/* Navbar editor specific styles */
+.navbar-editor {
+  max-width: 600px;
+}
+
+.navbar-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.navbar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.navbar-item-drag {
+  color: #999;
+  cursor: grab;
+  padding: 5px;
+}
+
+.navbar-item-drag:active {
+  cursor: grabbing;
+}
+
+.navbar-item-inputs {
+  display: flex;
+  gap: 15px;
+  flex: 1;
+}
+
+.navbar-item-inputs .json-form-group {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.navbar-item-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.navbar-item-delete {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.navbar-item-delete:hover {
+  background-color: #c82333;
+}
+
+/* Mobile responsive navbar editing */
+@media (max-width: 768px) {
+  .navbar-edit-btn,
+  .navbar-edit-note {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    z-index: 1001;
+  }
+  
+  .navbar-item-inputs {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

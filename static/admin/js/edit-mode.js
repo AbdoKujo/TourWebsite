@@ -141,55 +141,55 @@ function sendUpdate(elementId, fieldName, newValue, originalText, element) {
 // Fix the image editing functionality to preserve CSS classes
 function initEditableImages() {
   // Find all elements with data-editable="image" attribute
-  const editableImages = document.querySelectorAll('[data-editable="image"]');
+  const editableImages = document.querySelectorAll('[data-editable="image"]')
 
   editableImages.forEach((imgContainer) => {
     // Add edit indicator
-    imgContainer.classList.add("editable-image");
+    imgContainer.classList.add("editable-image")
 
     // Get the actual img element
-    const img = imgContainer.querySelector("img");
-    if (!img) return;
+    const img = imgContainer.querySelector("img")
+    if (!img) return
 
-    const elementId = imgContainer.dataset.elementId;
-    
+    const elementId = imgContainer.dataset.elementId
+
     // Store original styles and classes
     const originalStyles = {
       width: img.style.width,
       height: img.style.height,
       objectFit: img.style.objectFit,
       objectPosition: img.style.objectPosition,
-      cssText: img.style.cssText
-    };
-    const originalClasses = img.className;
+      cssText: img.style.cssText,
+    }
+    const originalClasses = img.className
 
     // Create edit button
-    const editBtn = document.createElement("button");
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    editBtn.classList.add("image-edit-btn");
-    imgContainer.appendChild(editBtn);
+    const editBtn = document.createElement("button")
+    editBtn.innerHTML = '<i class="fas fa-edit"></i>'
+    editBtn.classList.add("image-edit-btn")
+    imgContainer.appendChild(editBtn)
 
     // Edit button click handler
     editBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault()
+      e.stopPropagation()
 
       // Create file input
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*";
+      const fileInput = document.createElement("input")
+      fileInput.type = "file"
+      fileInput.accept = "image/*"
 
       // Trigger file selection
-      fileInput.click();
+      fileInput.click()
 
       // File selection handler
       fileInput.addEventListener("change", () => {
         if (fileInput.files && fileInput.files[0]) {
-          const formData = new FormData();
-          formData.append("image", fileInput.files[0]);
+          const formData = new FormData()
+          formData.append("image", fileInput.files[0])
 
           // Show loading indicator
-          imgContainer.classList.add("loading");
+          imgContainer.classList.add("loading")
 
           // Upload image to server
           fetch(`/dashboard/element/${elementId}/upload-image/`, {
@@ -198,30 +198,30 @@ function initEditableImages() {
           })
             .then((response) => response.json())
             .then((data) => {
-              imgContainer.classList.remove("loading");
+              imgContainer.classList.remove("loading")
 
               if (data.success) {
                 // Update image source while preserving styles
-                img.src = data.src + "?v=" + new Date().getTime();
-                
+                img.src = data.src + "?v=" + new Date().getTime()
+
                 // Restore original styling
-                img.className = originalClasses;
-                img.style.cssText = originalStyles.cssText;
-                
-                showNotification("Image updated successfully");
+                img.className = originalClasses
+                img.style.cssText = originalStyles.cssText
+
+                showNotification("Image updated successfully")
               } else {
-                showNotification("Error updating image", "error");
+                showNotification("Error updating image", "error")
               }
             })
             .catch((error) => {
-              imgContainer.classList.remove("loading");
-              console.error("Error:", error);
-              showNotification("Error updating image", "error");
-            });
+              imgContainer.classList.remove("loading")
+              console.error("Error:", error)
+              showNotification("Error updating image", "error")
+            })
         }
-      });
-    });
-  });
+      })
+    })
+  })
 }
 
 // Fix the contact form editor to allow editing the entire form structure
@@ -1834,56 +1834,70 @@ function initEditableNavbar() {
   // Add editable class
   navbar.classList.add("editable-navbar")
 
-  // Add edit button
-  const editBtn = document.createElement("button")
-  editBtn.className = "navbar-edit-btn"
-  editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Menu'
-  navbar.appendChild(editBtn)
+  // Look for the navbar JSON container
+  const navbarJsonContainer = navbar.querySelector('[data-editable="json"]')
 
-  // Get the navbar element ID
-  const navbarElements = document.querySelectorAll('[data-editable="json"]')
-  let navbarElementId = null
+  if (navbarJsonContainer) {
+    // Add edit button to the navbar
+    const editBtn = document.createElement("button")
+    editBtn.className = "navbar-edit-btn"
+    editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Menu'
+    editBtn.style.position = "absolute"
+    editBtn.style.top = "10px"
+    editBtn.style.right = "10px"
+    editBtn.style.zIndex = "1000"
+    editBtn.style.backgroundColor = "#1ec6b6"
+    editBtn.style.color = "white"
+    editBtn.style.border = "none"
+    editBtn.style.borderRadius = "4px"
+    editBtn.style.padding = "5px 10px"
+    editBtn.style.cursor = "pointer"
+    editBtn.style.fontSize = "12px"
 
-  navbarElements.forEach((element) => {
-    // Check if this is a navbar element
-    if (element.closest(".navbar")) {
-      navbarElementId = element.dataset.elementId
-    }
-  })
+    // Make navbar container relative for positioning
+    navbar.style.position = "relative"
 
-  if (!navbarElementId) {
-    // If no navbar element found, try to find it by checking all JSON elements
-    navbarElements.forEach(async (element) => {
-      const elementId = element.dataset.elementId
-      try {
-        const response = await fetch(`/dashboard/element/${elementId}/get/`)
-        if (response.ok) {
-          const data = await response.json()
-          try {
-            const jsonContent = JSON.parse(data.json_content || "{}")
-            if (Array.isArray(jsonContent)) {
-              // This might be a navbar
-              navbarElementId = elementId
-            }
-          } catch (error) {
-            console.error("Error parsing JSON:", error)
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching element data:", error)
-      }
-    })
-  }
+    navbar.appendChild(editBtn)
 
-  // Add click event to edit button
-  if (navbarElementId) {
+    // Get the navbar element ID
+    const navbarElementId = navbarJsonContainer.dataset.elementId
+
+    // Add click event to edit button
     editBtn.addEventListener("click", (e) => {
       e.preventDefault()
       e.stopPropagation()
       openJsonEditor(navbarElementId)
     })
+
+    // Also make the navbar items themselves clickable for editing
+    navbarJsonContainer.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      openJsonEditor(navbarElementId)
+    })
   } else {
-    editBtn.style.display = "none"
+    // If no JSON navbar found, try to find individual navbar elements
+    const navbarElements = document.querySelectorAll('.navbar .nav-link[data-editable="text"]')
+
+    if (navbarElements.length > 0) {
+      // Add a note that individual elements are editable
+      const editNote = document.createElement("div")
+      editNote.className = "navbar-edit-note"
+      editNote.innerHTML = '<i class="fas fa-info-circle"></i> Click individual menu items to edit'
+      editNote.style.position = "absolute"
+      editNote.style.top = "10px"
+      editNote.style.right = "10px"
+      editNote.style.zIndex = "1000"
+      editNote.style.backgroundColor = "#17a2b8"
+      editNote.style.color = "white"
+      editNote.style.border = "none"
+      editNote.style.borderRadius = "4px"
+      editNote.style.padding = "5px 10px"
+      editNote.style.fontSize = "12px"
+
+      navbar.style.position = "relative"
+      navbar.appendChild(editNote)
+    }
   }
 }
 
@@ -2538,3 +2552,198 @@ function getCookie(name) {
   }
   return cookieValue
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize logo editor
+  initLogoEditor()
+})
+
+function initLogoEditor() {
+  // Find all elements with data-editable="logo" attribute
+  const editableLogos = document.querySelectorAll('[data-editable="logo"]')
+
+  editableLogos.forEach((element) => {
+    // Add edit indicator
+    element.classList.add("editable-logo")
+
+    // Add click event to make logo editable
+    element.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      // If already in edit state, return
+      if (element.querySelector("input")) return
+
+      const originalText = element.innerHTML
+      const elementId = element.dataset.elementId
+      const fieldName = element.dataset.field || "title"
+
+      // Create modal for logo editing
+      const modal = document.createElement("div")
+      modal.classList.add("logo-edit-modal")
+
+      const modalContent = document.createElement("div")
+      modalContent.classList.add("logo-edit-content")
+
+      const modalTitle = document.createElement("h3")
+      modalTitle.textContent = "Edit Logo Text"
+      
+      // Create help text
+      const helpText = document.createElement("p")
+      helpText.className = "logo-help-text"
+      helpText.innerHTML = "Enter the logo text. The styling will be applied automatically."
+      
+      // Create input for plain text
+      const textInput = document.createElement("input")
+      textInput.type = "text"
+      textInput.className = "logo-text-input"
+      textInput.placeholder = "Example: Marrakech Activities Portal"
+      
+      // Extract plain text without HTML
+      let plainText = originalText.replace(/<\/?span>/g, " ").replace(/\s+/g, " ").trim()
+      textInput.value = plainText
+      
+      // Preview section
+      const previewLabel = document.createElement("p")
+      previewLabel.className = "logo-preview-label"
+      previewLabel.textContent = "Preview:"
+      
+      const preview = document.createElement("div")
+      preview.className = "logo-preview site-brand"
+      preview.innerHTML = originalText
+      
+      // Buttons
+      const buttonContainer = document.createElement("div")
+      buttonContainer.className = "logo-button-container"
+      
+      const saveBtn = document.createElement("button")
+      saveBtn.innerText = "Save"
+      saveBtn.classList.add("logo-save-btn")
+      
+      const cancelBtn = document.createElement("button")
+      cancelBtn.innerText = "Cancel"
+      cancelBtn.classList.add("logo-cancel-btn")
+
+      // Assemble modal
+      buttonContainer.appendChild(cancelBtn)
+      buttonContainer.appendChild(saveBtn)
+      
+      modalContent.appendChild(modalTitle)
+      modalContent.appendChild(helpText)
+      modalContent.appendChild(textInput)
+      modalContent.appendChild(previewLabel)
+      modalContent.appendChild(preview)
+      modalContent.appendChild(buttonContainer)
+      
+      modal.appendChild(modalContent)
+      document.body.appendChild(modal)
+
+      // Update preview as user types
+      textInput.addEventListener("input", () => {
+        const parts = textInput.value.trim().split(/\s+/)
+        let formattedText = ""
+        
+        if (parts.length >= 3) {
+          formattedText = `${parts[0]}<span>${parts[1]}</span><span>${parts.slice(2).join(" ")}</span>`
+        } else if (parts.length === 2) {
+          formattedText = `${parts[0]}<span>${parts[1]}</span>`
+        } else {
+          formattedText = parts[0] || ""
+        }
+        
+        preview.innerHTML = formattedText
+      })
+
+      // Save button click handler
+      saveBtn.addEventListener("click", () => {
+        // Format the text with spans
+        const parts = textInput.value.trim().split(/\s+/)
+        let formattedText = ""
+        
+        if (parts.length >= 3) {
+          formattedText = `${parts[0]}<span>${parts[1]}</span><span>${parts.slice(2).join(" ")}</span>`
+        } else if (parts.length === 2) {
+          formattedText = `${parts[0]}<span>${parts[1]}</span>`
+        } else {
+          formattedText = parts[0] || ""
+        }
+
+        // Send update to server
+        const formData = new FormData()
+        formData.append("field", fieldName)
+        formData.append("value", formattedText)
+
+        fetch(`/dashboard/element/${elementId}/update/`, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              element.innerHTML = formattedText
+              showNotification("Logo updated successfully")
+            } else {
+              showNotification("Error updating logo", "error")
+              element.innerHTML = originalText
+            }
+            document.body.removeChild(modal)
+          })
+          .catch((error) => {
+            console.error("Error:", error)
+            showNotification("Error updating logo", "error")
+            element.innerHTML = originalText
+            document.body.removeChild(modal)
+          })
+      })
+
+      // Cancel button click handler
+      cancelBtn.addEventListener("click", () => {
+        document.body.removeChild(modal)
+      })
+    })
+  })
+}
+
+// Add this to your edit-mode.js file
+document.addEventListener('DOMContentLoaded', function() {
+    // Fix service background image in edit mode
+    const serviceSection = document.getElementById('services');
+    const serviceBgImage = document.querySelector('.services-bg img');
+    
+    if (serviceSection && serviceBgImage) {
+        // Get the image source
+        const imageSrc = serviceBgImage.getAttribute('src');
+        
+        // Apply as background image while preserving the gradient overlay
+        serviceSection.style.background = `
+            linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url(${imageSrc}) center/cover no-repeat
+        `;
+        
+        // Make the edit container more visible and accessible in edit mode
+        if (document.body.classList.contains('edit-mode')) {
+            const servicesBg = document.querySelector('.services-bg');
+            if (servicesBg) {
+                servicesBg.style.position = 'absolute';
+                servicesBg.style.top = '15px';
+                servicesBg.style.right = '15px';
+                servicesBg.style.zIndex = '10';
+                servicesBg.style.background = 'rgba(255,255,255,0.7)';
+                servicesBg.style.padding = '10px';
+                servicesBg.style.borderRadius = '5px';
+                servicesBg.style.border = '2px dashed #1ec6b6';
+                
+                // Add a label
+                const label = document.createElement('div');
+                label.textContent = 'Edit Background Image';
+                label.style.textAlign = 'center';
+                label.style.marginTop = '5px';
+                label.style.fontSize = '12px';
+                label.style.color = '#333';
+                label.style.fontWeight = 'bold';
+                
+                servicesBg.appendChild(label);
+            }
+        }
+    }
+});
