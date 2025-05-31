@@ -393,3 +393,29 @@ def upload_video(request, element_id):
     )
     
     return JsonResponse({'success': True, 'src': element.src})
+
+@login_required
+@csrf_exempt
+def delete_element(request, element_id):
+    """Delete an element by ID"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method allowed'}, status=405)
+    
+    try:
+        element = get_object_or_404(Element, id=element_id)
+        
+        # Record deletion in history
+        EditHistory.objects.create(
+            user=request.user,
+            element_id=element_id,  # Keep the ID even though element will be deleted
+            previous_value=f"Title: {element.title}, Description: {element.description}, Src: {element.src}",
+            new_value="DELETED",
+            field_name="element"
+        )
+        
+        # Delete the element
+        element.delete()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
